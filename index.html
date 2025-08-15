@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prompt Builder TeachInspire - Générateur de prompts IA structurés</title>
+    <title>Prompt Builder Promptomatik - Générateur de prompts IA structurés</title>
     <link rel="icon" type="image/png" href="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/134736d6-5e59-461d-8594-dbd8c8d6c400/public">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,15 +12,19 @@
             theme: {
                 extend: {
                     colors: {
-                        'brand-bg': '#f8f7f2',
-                        'brand-text': '#2c3d57',
-                        'brand-primary-accent': '#85a2a3',
-                        'brand-secondary-accent': '#f1d263',
+                        'brand-primary': '#0E7C86',        // Bleu sarcelle profond
+                        'brand-secondary': '#A1E3D8',      // Vert menthe douce
+                        'brand-accent': '#F78C6B',         // Corail clair
+                        'brand-tertiary': '#F7D488',       // Jaune sable
+                        'brand-dark': '#2C2C34',           // Anthracite doux
+                        'brand-light': '#F5F6F8',          // Gris brume
+                        'brand-bg': '#F5F6F8',
+                        'brand-text': '#2C2C34',
                         'brand-card-bg': '#ffffff',
                         'brand-muted-text': '#6b7280',
                         'brand-error': '#ef4444',
                         'brand-success': '#10b981',
-                        'brand-info': '#3b82f6',
+                        'brand-info': '#0E7C86',
                     },
                     fontFamily: {
                         'playfair': ['Playfair Display', 'serif'],
@@ -38,21 +42,24 @@
     
     <style>
         :root {
-            --brand-bg: #f8f7f2;
-            --brand-text: #2c3d57;
-            --brand-accent: #85a2a3;
-            --brand-gold: #f1d263;
+            --brand-primary: #0E7C86;
+            --brand-secondary: #A1E3D8;
+            --brand-accent: #F78C6B;
+            --brand-tertiary: #F7D488;
+            --brand-dark: #2C2C34;
+            --brand-light: #F5F6F8;
+            --brand-bg: #F5F6F8;
+            --brand-text: #2C2C34;
             --brand-white: #ffffff;
-            --brand-gold-light: #f5d563;
-            --brand-accent-light: #a8c5c6;
-            --brand-text-light: #405371;
+            --brand-primary-light: #2B9DA6;
+            --brand-accent-light: #F9A285;
             
             /* Enhanced shadow system */
-            --shadow-xs: 0 1px 3px rgba(44, 61, 87, 0.04);
-            --shadow-sm: 0 2px 8px rgba(44, 61, 87, 0.06);
-            --shadow-md: 0 8px 30px rgba(44, 61, 87, 0.08);
-            --shadow-lg: 0 20px 40px rgba(44, 61, 87, 0.12);
-            --shadow-xl: 0 25px 50px rgba(44, 61, 87, 0.15);
+            --shadow-xs: 0 1px 3px rgba(44, 44, 52, 0.04);
+            --shadow-sm: 0 2px 8px rgba(44, 44, 52, 0.06);
+            --shadow-md: 0 8px 30px rgba(44, 44, 52, 0.08);
+            --shadow-lg: 0 20px 40px rgba(44, 44, 52, 0.12);
+            --shadow-xl: 0 25px 50px rgba(44, 44, 52, 0.15);
             
             /* Animation timing */
             --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
@@ -139,8 +146,8 @@
             gap: 6px;
             padding: 6px 12px;
             border-radius: 6px;
-            background: rgba(133, 162, 163, 0.1);
-            border: 1px solid rgba(133, 162, 163, 0.2);
+            background: rgba(14, 124, 134, 0.1);
+            border: 1px solid rgba(14, 124, 134, 0.2);
             color: var(--brand-text);
             font-size: 14px;
             font-weight: 500;
@@ -149,8 +156,8 @@
         }
 
         .language-toggle:hover {
-            background: rgba(133, 162, 163, 0.15);
-            border-color: var(--brand-accent);
+            background: rgba(14, 124, 134, 0.15);
+            border-color: var(--brand-primary);
         }
 
         .language-dropdown {
@@ -222,8 +229,8 @@
 
         .btn-connexion {
             background: transparent;
-            border: 1.5px solid var(--brand-accent);
-            color: var(--brand-accent);
+            border: 1.5px solid var(--brand-primary);
+            color: var(--brand-primary);
             padding: 10px 20px;
             border-radius: 8px;
             font-weight: 600;
@@ -242,7 +249,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: var(--brand-accent);
+            background: var(--brand-primary);
             transition: left 0.3s var(--ease-smooth);
             z-index: -1;
         }
@@ -258,7 +265,7 @@
         }
 
         .btn-primary-nav {
-            background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-light) 100%);
+            background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-light) 100%);
             color: var(--brand-text);
             padding: 12px 24px;
             border-radius: 10px;
@@ -273,7 +280,7 @@
 
         .btn-primary-nav:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(241, 210, 99, 0.4);
+            box-shadow: 0 8px 25px rgba(247, 140, 107, 0.4);
         }
 
         /* Mobile menu */
@@ -346,7 +353,7 @@
         }
 
         .hero-badge {
-            background: linear-gradient(135deg, var(--brand-accent), var(--brand-accent-light));
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light));
             color: white;
             padding: 10px 20px;
             border-radius: 25px;
@@ -391,7 +398,7 @@
         }
 
         .cta-primary {
-            background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-light) 100%);
+            background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-light) 100%);
             color: var(--brand-text);
             padding: 18px 32px;
             border-radius: 12px;
@@ -411,14 +418,14 @@
 
         .cta-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(241, 210, 99, 0.4);
+            box-shadow: 0 12px 30px rgba(247, 140, 107, 0.4);
         }
 
         .cta-secondary {
             background: transparent;
-            color: var(--brand-accent);
+            color: var(--brand-primary);
             padding: 18px 24px;
-            border: 2px solid var(--brand-accent);
+            border: 2px solid var(--brand-primary);
             border-radius: 12px;
             font-weight: 600;
             text-decoration: none;
@@ -434,7 +441,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: var(--brand-accent);
+            background: var(--brand-primary);
             transition: left 0.3s var(--ease-smooth);
             z-index: -1;
         }
@@ -1331,7 +1338,7 @@
     <nav class="navbar" id="navbar">
         <div class="nav-content">
             <img src="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/134736d6-5e59-461d-8594-dbd8c8d6c400/public" 
-                 alt="TeachInspire" 
+                 alt="Promptomatik" 
                  class="logo">
             
             <div class="nav-actions">
@@ -1395,11 +1402,11 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
                     </svg>
-                    Prompt Builder TeachInspire
+                    Prompt Builder Promptomatik
                 </div>
-                <h1 class="hero-title" data-translate="hero.title">Créez des prompts IA structurés en quelques clics</h1>
+                <h1 class="hero-title" data-translate="hero.title">Professional AI Prompting Made Simple</h1>
                 <p class="hero-subtitle" data-translate="hero.subtitle">
-                    Transformez vos idées en instructions précises compatibles avec n'importe quel outil d'intelligence artificielle
+                    Transformez vos idées business en prompts IA optimisés pour tous les secteurs professionnels
                 </p>
                 <div class="hero-cta-group">
                     <a href="app.html" class="cta-primary">
@@ -1714,7 +1721,7 @@
     <!-- Enhanced Footer -->
     <footer class="footer">
         <img src="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/134736d6-5e59-461d-8594-dbd8c8d6c400/public" 
-             alt="TeachInspire" 
+             alt="Promptomatik" 
              class="footer-logo">
         <div class="footer-contact">
             Contact : <a href="mailto:greg@teachinspire.me">greg@teachinspire.me</a>

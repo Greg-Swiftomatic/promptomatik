@@ -5,11 +5,19 @@ export const MIN_RAW_REQUEST_LENGTH = 10;
 export const MAX_RAW_REQUEST_LENGTH = 2000;
 
 export const DOMAIN_OPTIONS = [
-  { value: 'education', labelToken: 'education' },
-  { value: 'technical', labelToken: 'technical' },
+  { value: 'business', labelToken: 'business' },
+  { value: 'marketing', labelToken: 'marketing' },
+  { value: 'legal', labelToken: 'legal' },
+  { value: 'healthcare', labelToken: 'healthcare' },
+  { value: 'finance', labelToken: 'finance' },
+  { value: 'hr', labelToken: 'hr' },
+  { value: 'consulting', labelToken: 'consulting' },
+  { value: 'research', labelToken: 'research' },
+  { value: 'engineering', labelToken: 'engineering' },
+  { value: 'sales', labelToken: 'sales' },
+  { value: 'operations', labelToken: 'operations' },
   { value: 'creative', labelToken: 'creative' },
-  { value: 'analysis', labelToken: 'analysis' },
-  { value: 'other', labelToken: 'other' },
+  { value: 'technical', labelToken: 'technical' },
 ];
 
 export const OUTPUT_LENGTH_OPTIONS = [
@@ -21,12 +29,12 @@ export const OUTPUT_LENGTH_OPTIONS = [
 export const translations = {
   fr: {
     app: {
-      title: "Prompt Builder Teachinspire",
+      title: "Prompt Builder Promptomatik",
       subtitle: "Transformez vos idées en prompts structurés efficaces"
     },
     input: {
       label: "Que voulez-vous que l'IA fasse pour vous ?",
-      placeholder: "Exemple: Transformer cet article de presse en activités de compréhension écrite adaptées à des étudiants A2, avec focus sur le passé composé...",
+      placeholder: "Exemple: Créer une stratégie de lancement pour un produit SaaS B2B, avec analyse concurrentielle et plan d'action sur 6 mois...",
       button: "Analyser ma demande",
       charCount: "caractères",
       minCharWarning: `Minimum ${MIN_RAW_REQUEST_LENGTH} caractères requis`
@@ -58,14 +66,14 @@ export const translations = {
       outputLength: "Longueur de sortie",
       expertRole: "Rôle de l'expert",
       expertRoleDescription: "Préciser le rôle que vous voulez donner à l'IA pour cette tâche - sa fonction.",
-      expertRolePlaceholder: "Ex: Concepteur pédagogique",
+      expertRolePlaceholder: "Ex: Stratège Business",
       mission: "Mission principale",
       missionDescription: "Préciser les tâches que vous voulez que l'IA exécute - sa mission.",
-      missionPlaceholder: "Ex: créer des cours engageants",
+      missionPlaceholder: "Ex: développer des stratégies marketing",
       constraints: "Contraintes (une par ligne)",
       next: "Suivant",
       back: "Retour",
-      constraintsPlaceholder: "Ex:\nDurée: 50 minutes\nNiveau: B1\nGroupe: 12 élèves"
+      constraintsPlaceholder: "Ex:\nBudget: 10k€\nÉchéance: T1 2024\nÉquipe: 5 personnes"
     },
     generation: {
       generating: "Génération en cours...",
@@ -100,11 +108,19 @@ export const translations = {
       emptyMessage: "Vous n'avez pas encore sauvegardé de prompts. Commencez par créer votre premier prompt !"
     },
     domains: {
-      education: "Éducation",
-      technical: "Technique",
+      business: "Business",
+      marketing: "Marketing",
+      legal: "Juridique",
+      healthcare: "Santé",
+      finance: "Finance", 
+      hr: "Ressources Humaines",
+      consulting: "Conseil",
+      research: "Recherche",
+      engineering: "Ingénierie",
+      sales: "Ventes",
+      operations: "Opérations",
       creative: "Créatif",
-      analysis: "Analyse",
-      other: "Autre"
+      technical: "Technique"
     },
     lengths: {
       short: "Court",
@@ -124,7 +140,7 @@ export const translations = {
       loading: "Chargement...",
       login: {
         title: "Connexion",
-        subtitle: "Connectez-vous à votre compte Teachinspire",
+        subtitle: "Connectez-vous à votre compte Promptomatik",
         signIn: "Se connecter",
         signingIn: "Connexion...",
         noAccount: "Pas encore de compte ?",
@@ -132,7 +148,7 @@ export const translations = {
       },
       register: {
         title: "Créer un compte",
-        subtitle: "Rejoignez Teachinspire pour sauvegarder vos prompts",
+        subtitle: "Rejoignez Promptomatik pour sauvegarder vos prompts",
         createAccount: "Créer le compte",
         creatingAccount: "Création...",
         hasAccount: "Déjà un compte ?",
@@ -246,12 +262,12 @@ export const translations = {
   },
   en: {
     app: {
-      title: "Teachinspire Prompt Builder",
+      title: "Promptomatik Prompt Builder",
       subtitle: "Transform your ideas into structured, effective prompts"
     },
     input: {
       label: "What do you want the AI to do for you?",
-      placeholder: "Example: Transform this news article into reading comprehension activities adapted for A2 students, with focus on past tense...",
+      placeholder: "Example: Create a go-to-market strategy for a B2B SaaS product, with competitive analysis and 6-month action plan...",
       button: "Analyze my request",
       charCount: "characters",
       minCharWarning: `Minimum ${MIN_RAW_REQUEST_LENGTH} characters required`
@@ -283,14 +299,14 @@ export const translations = {
       outputLength: "Output length",
       expertRole: "Expert role",
       expertRoleDescription: "Specify the role you want the AI to play for this task - its function.",
-      expertRolePlaceholder: "Ex: Instructional Designer",
+      expertRolePlaceholder: "Ex: Business Strategist",
       mission: "Main mission",
       missionDescription: "Specify the tasks you want the AI to perform - its mission.",
-      missionPlaceholder: "Ex: create engaging courses",
+      missionPlaceholder: "Ex: develop marketing strategies",
       constraints: "Constraints (one per line)",
       next: "Next",
       back: "Back",
-      constraintsPlaceholder: "Ex:\nDuration: 50 minutes\nLevel: B1\nGroup: 12 students"
+      constraintsPlaceholder: "Ex:\nBudget: $10k\nTimeline: Q1 2024\nTeam: 5 people"
     },
     generation: {
       generating: "Generating...",
@@ -325,11 +341,19 @@ export const translations = {
       emptyMessage: "You haven't saved any prompts yet. Start by creating your first prompt!"
     },
     domains: {
-      education: "Education",
-      technical: "Technical",
+      business: "Business",
+      marketing: "Marketing", 
+      legal: "Legal",
+      healthcare: "Healthcare",
+      finance: "Finance",
+      hr: "Human Resources",
+      consulting: "Consulting",
+      research: "Research",
+      engineering: "Engineering",
+      sales: "Sales",
+      operations: "Operations",
       creative: "Creative",
-      analysis: "Analysis",
-      other: "Other"
+      technical: "Technical"
     },
     lengths: {
       short: "Short",
@@ -349,7 +373,7 @@ export const translations = {
       loading: "Loading...",
       login: {
         title: "Sign In",
-        subtitle: "Sign in to your Teachinspire account",
+        subtitle: "Sign in to your Promptomatik account",
         signIn: "Sign In",
         signingIn: "Signing in...",
         noAccount: "Don't have an account?",
@@ -357,7 +381,7 @@ export const translations = {
       },
       register: {
         title: "Create Account",
-        subtitle: "Join Teachinspire to save your prompts",
+        subtitle: "Join Promptomatik to save your prompts",
         createAccount: "Create Account",
         creatingAccount: "Creating...",
         hasAccount: "Already have an account?",
@@ -474,28 +498,148 @@ export const translations = {
 
 // ✅ AJOUT UX: Helpers contextuels pour guider l'utilisateur dans l'étape 3
 export const CONTEXTUAL_HELPERS = {
-  education: {
+  business: {
     expertRole: {
-      suggestions: ["Concepteur pédagogique", "Enseignant expert", "Formateur", "Responsable formation"],
-      tip: "Le rôle influence le style et la méthodologie du prompt généré"
+      suggestions: ["Stratège Business", "Consultant Senior", "Directeur Stratégie", "Business Analyst"],
+      tip: "Le rôle influence l'approche stratégique et la méthodologie du prompt généré"
     },
     mission: {
       suggestions: [
-        "Créer des activités d'apprentissage engageantes",
-        "Développer une séquence pédagogique complète", 
-        "Concevoir une évaluation adaptée au niveau",
-        "Produire des supports de cours interactifs"
+        "Développer une stratégie de croissance",
+        "Optimiser les processus opérationnels", 
+        "Créer un plan d'expansion marché",
+        "Analyser la performance business"
       ],
-      tip: "Décrivez précisément ce que vous voulez accomplir avec vos étudiants"
+      tip: "Décrivez précisément l'objectif business que vous voulez atteindre"
     },
     constraints: {
       suggestions: [
-        "Durée: 50 minutes",
-        "Niveau: A2-B1", 
-        "Groupe: 15 étudiants",
-        "Support: Tableau interactif"
+        "Budget: 50k€",
+        "Échéance: 6 mois", 
+        "Équipe: 10 personnes",
+        "Marché: B2B"
       ],
-      tip: "Les contraintes aident l'IA à créer un contenu adapté à votre contexte"
+      tip: "Les contraintes aident l'IA à créer une stratégie adaptée à votre contexte"
+    }
+  },
+  marketing: {
+    expertRole: {
+      suggestions: ["Marketing Manager", "Growth Hacker", "Brand Strategist", "Digital Marketer"],
+      tip: "Le rôle définit l'expertise marketing et l'approche créative"
+    },
+    mission: {
+      suggestions: [
+        "Développer une campagne de lancement",
+        "Optimiser le funnel de conversion",
+        "Créer une stratégie de contenu",
+        "Analyser la performance des campagnes"
+      ],
+      tip: "Précisez l'objectif marketing et les résultats attendus"
+    },
+    constraints: {
+      suggestions: [
+        "Budget publicitaire: 20k€",
+        "Audience: 25-45 ans",
+        "Canaux: LinkedIn, Google Ads",
+        "KPI: +30% leads qualifiés"
+      ],
+      tip: "Définissez budget, audience cible et objectifs mesurables"
+    }
+  },
+  legal: {
+    expertRole: {
+      suggestions: ["Juriste d'entreprise", "Avocat conseil", "Compliance Officer", "Legal Advisor"],
+      tip: "Le rôle juridique influence la précision légale et le niveau de détail"
+    },
+    mission: {
+      suggestions: [
+        "Rédiger un contrat commercial",
+        "Analyser la conformité réglementaire",
+        "Créer une politique de confidentialité",
+        "Évaluer les risques juridiques"
+      ],
+      tip: "Précisez le domaine de droit et l'objectif juridique"
+    },
+    constraints: {
+      suggestions: [
+        "Juridiction: France/UE",
+        "Secteur: SaaS/Tech",
+        "Conformité: RGPD",
+        "Urgence: 2 semaines"
+      ],
+      tip: "Indiquez la juridiction, le secteur et les règlements applicables"
+    }
+  },
+  finance: {
+    expertRole: {
+      suggestions: ["Analyste Financier", "CFO", "Contrôleur de Gestion", "Investment Analyst"],
+      tip: "Le rôle finance détermine le niveau d'analyse et les métriques utilisées"
+    },
+    mission: {
+      suggestions: [
+        "Créer un modèle de prévision financière",
+        "Analyser la rentabilité d'un projet",
+        "Optimiser la structure de coûts",
+        "Préparer un business plan financier"
+      ],
+      tip: "Définissez l'objectif financier et les métriques clés"
+    },
+    constraints: {
+      suggestions: [
+        "Période: 3 ans",
+        "Croissance ciblée: 25% annuel",
+        "Marge brute: >70%",
+        "Financement: Series A"
+      ],
+      tip: "Précisez la période, les objectifs de croissance et contraintes budgétaires"
+    }
+  },
+  hr: {
+    expertRole: {
+      suggestions: ["DRH", "HR Business Partner", "Talent Acquisition", "Learning & Development"],
+      tip: "Le rôle RH influence l'approche humaine et les processus"
+    },
+    mission: {
+      suggestions: [
+        "Développer un plan de recrutement",
+        "Créer un programme de formation",
+        "Optimiser l'expérience collaborateur",
+        "Concevoir une politique de rémunération"
+      ],
+      tip: "Décrivez l'objectif RH et l'impact sur les équipes"
+    },
+    constraints: {
+      suggestions: [
+        "Effectif cible: 50 personnes",
+        "Budget formation: 15k€",
+        "Délai recrutement: 3 mois",
+        "Remote: 50% du temps"
+      ],
+      tip: "Indiquez l'effectif, le budget et les contraintes organisationnelles"
+    }
+  },
+  sales: {
+    expertRole: {
+      suggestions: ["Sales Manager", "Business Developer", "Account Executive", "Sales Operations"],
+      tip: "Le rôle commercial définit l'approche vente et les techniques utilisées"
+    },
+    mission: {
+      suggestions: [
+        "Développer un processus de vente",
+        "Créer un script de prospection",
+        "Optimiser le cycle de vente",
+        "Analyser les performances commerciales"
+      ],
+      tip: "Précisez l'objectif commercial et le type de vente (B2B/B2C)"
+    },
+    constraints: {
+      suggestions: [
+        "Cycle de vente: 3 mois",
+        "Ticket moyen: 5k€",
+        "Taux conversion: 15%",
+        "Pipeline: 50 prospects"
+      ],
+      tip: "Définissez les métriques commerciales et objectifs de performance"
     }
   },
   technical: {

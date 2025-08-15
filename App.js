@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronRight, Copy, Save, Download, Languages, Sparkles, Brain, Check, X, AlertCircle, FileText, Clock, Star, Loader2, Trash2 } from 'lucide-react'; // Added Trash2
 // Removed type imports: PromptType, Language, Domain, Complexity, OutputLength, SavedPrompt, Translations
 import { translations, DEFAULT_LANGUAGE, MIN_RAW_REQUEST_LENGTH, MAX_RAW_REQUEST_LENGTH, DOMAIN_OPTIONS, OUTPUT_LENGTH_OPTIONS, CONTEXTUAL_HELPERS } from './constants.js';
-import { generateStructuredPromptWithGemini } from './services/geminiService.js';
+import { generateStructuredPromptWithOpenRouter } from './services/openrouterService.js';
 import { AuthProvider } from './auth/AuthContext.js';
 import AuthWrapper from './auth/AuthWrapper.js';
 import UserMenu from './components/UserMenu.js';
@@ -39,7 +39,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
   const [analyzedComplexity, setAnalyzedComplexity] = useState('simple');
   const [recommendedType, setRecommendedType] = useState('MVP');
 
-  const [selectedDomain, setSelectedDomain] = useState('education');
+  const [selectedDomain, setSelectedDomain] = useState('business');
   const [outputLength, setOutputLength] = useState('medium');
   const [expertRole, setExpertRole] = useState('');
   const [mission, setMission] = useState('');
@@ -52,6 +52,14 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
   const [savedPrompts, setSavedPrompts] = useState([]);
   const [notification, setNotification] = useState('');
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
+  
+  // NEW: Enhanced metadata from API
+  const [promptMetadata, setPromptMetadata] = useState(null);
+  const [expertiseSuggestions, setExpertiseSuggestions] = useState([]);
+  const [chosenRole, setChosenRole] = useState('');
+  const [levelLabel, setLevelLabel] = useState('');
+  const [customExpertRole, setCustomExpertRole] = useState('');
+  const [showCustomExpertInput, setShowCustomExpertInput] = useState(false);
   
   const t = translations[language];
 
@@ -99,13 +107,14 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
     };
   }, []);
 
-  const handleAnalyzeRequest = () => {
+  const handleAnalyzeRequest = async () => {
     if (rawRequest.length >= MIN_RAW_REQUEST_LENGTH) {
+      // Use local analysis for now and call API during generation for metadata
       const analysis = analyzeUserRequest(rawRequest);
       setAnalyzedDomain(analysis.domain);
       setAnalyzedComplexity(analysis.complexity);
       setRecommendedType(analysis.recommendedType);
-      setSelectedDomain(analysis.domain); 
+      setSelectedDomain(analysis.domain);
       setPromptType(analysis.recommendedType);
       setStep(2);
     }
@@ -116,21 +125,34 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
     setStep(4);
 
     try {
-      const result = await generateStructuredPromptWithGemini({
+      // Use custom expert role if provided, otherwise use the chosen role from suggestions
+      const effectiveExpertRole = customExpertRole.trim() || chosenRole || expertRole;
+      
+      const result = await generateStructuredPromptWithOpenRouter({
         rawRequest,
         promptType,
         domain: selectedDomain,
         language,
         outputLength,
-        expertRole,
+        expertRole: effectiveExpertRole,
         mission,
         constraints,
       });
-      setGeneratedPrompt(result);
+      
+      // NEW: Handle enhanced API response with metadata
+      if (result && typeof result === 'object' && result.prompt) {
+        setGeneratedPrompt(result.prompt);
+        setPromptMetadata(result.metadata || null);
+      } else {
+        // Backward compatibility for string responses
+        setGeneratedPrompt(typeof result === 'string' ? result : result.prompt || result);
+        setPromptMetadata(null);
+      }
     } catch (error) {
       console.error("Error in handleGeneratePrompt:", error);
       setGeneratedPrompt(t.generation.error + (error instanceof Error ? ` ${error.message}` : ''));
       showNotification(t.notifications.apiError, 'error');
+      setPromptMetadata(null);
     } finally {
       setIsGenerating(false);
     }
@@ -188,13 +210,20 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
     setAnalyzedDomain('other');
     setAnalyzedComplexity('simple');
     setRecommendedType('MVP');
-    setSelectedDomain('education');
+    setSelectedDomain('business'); // Changed from 'education' to 'business'
     setOutputLength('medium');
     setExpertRole('');
     setMission('');
     setConstraints('');
     setGeneratedPrompt('');
     setIsGenerating(false);
+    // NEW: Reset enhanced metadata
+    setPromptMetadata(null);
+    setExpertiseSuggestions([]);
+    setChosenRole('');
+    setLevelLabel('');
+    setCustomExpertRole('');
+    setShowCustomExpertInput(false);
   };
 
   // Back to dashboard (same as reset but explicit)
@@ -315,7 +344,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
         React.createElement("div", { className: "flex items-center gap-4" },
           React.createElement("button", {
             onClick: () => handleLanguageChange(language === 'fr' ? 'en' : 'fr'),
-            className: "flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-brand-primary-accent/10 text-brand-primary-accent transition-colors",
+            className: "flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-brand-primary/10 text-brand-primary transition-colors",
             "aria-label": language === 'fr' ? 'Switch to English' : 'Passer au Français'
           },
             React.createElement(Languages, { className: "w-5 h-5" }),
@@ -333,16 +362,16 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
             ? `Bonjour ${user?.firstName || user?.email?.split('@')[0] || 'Utilisateur'}!`
             : `Hello ${user?.firstName || user?.email?.split('@')[0] || 'User'}!`
         ),
-        React.createElement("p", { className: "text-brand-primary-accent text-lg" }, t.app.subtitle)
+        React.createElement("p", { className: "text-brand-primary text-lg" }, t.app.subtitle)
       ),
       step === 1 && React.createElement("div", { className: "bg-brand-card-bg rounded-lg shadow-brand p-6 md:p-8" },
-        React.createElement("label", { htmlFor: "rawRequestInput", className: "block text-xl font-semibold text-brand-text mb-4 pb-2 border-b-2 border-brand-primary-accent/50" }, t.input.label),
+        React.createElement("label", { htmlFor: "rawRequestInput", className: "block text-xl font-semibold text-brand-text mb-4 pb-2 border-b-2 border-brand-primary/50" }, t.input.label),
         React.createElement("textarea", {
           id: "rawRequestInput",
           value: rawRequest,
           onChange: (e) => setRawRequest(e.target.value),
           placeholder: t.input.placeholder,
-          className: "w-full h-40 p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary-accent focus:ring-1 focus:ring-brand-primary-accent outline-none resize-none font-inter text-base",
+          className: "w-full h-40 p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none resize-none font-inter text-base",
           maxLength: MAX_RAW_REQUEST_LENGTH
         }),
         React.createElement("div", { className: "flex flex-col sm:flex-row justify-between items-center mt-4 space-y-3 sm:space-y-0" },
@@ -353,7 +382,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
           React.createElement("div", {className: "flex gap-3"},
             React.createElement("button", {
               onClick: () => setShowLibraryPage(true),
-              className: "px-5 py-2.5 border-2 border-brand-primary-accent text-brand-primary-accent rounded-lg font-semibold hover:bg-brand-primary-accent hover:text-white transition-colors flex items-center gap-2 text-sm relative"
+              className: "px-5 py-2.5 border-2 border-brand-primary text-brand-primary rounded-lg font-semibold hover:bg-brand-primary hover:text-white transition-colors flex items-center gap-2 text-sm relative"
             },
               React.createElement(FileText, { className: "w-4 h-4" }),
               React.createElement("span", null, t.actions.viewLibrary),
@@ -365,7 +394,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
             React.createElement("button", {
               onClick: handleAnalyzeRequest,
               disabled: rawRequest.length < MIN_RAW_REQUEST_LENGTH,
-              className: `px-5 py-2.5 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm ${rawRequest.length < MIN_RAW_REQUEST_LENGTH ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-brand-primary-accent text-white hover:bg-opacity-80 cursor-pointer'}`
+              className: `px-5 py-2.5 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm ${rawRequest.length < MIN_RAW_REQUEST_LENGTH ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-brand-primary text-white hover:bg-opacity-80 cursor-pointer'}`
             },
               t.input.button,
               React.createElement(ChevronRight, { className: "w-4 h-4" })
@@ -375,12 +404,12 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
       ),
       step === 2 && React.createElement("div", { className: "space-y-6" },
         React.createElement("div", { className: "bg-brand-card-bg rounded-lg shadow-brand p-6 md:p-8" },
-          React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary-accent/50" }, t.analysis.title),
+          React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary/50" }, t.analysis.title),
           React.createElement("div", { className: "grid md:grid-cols-3 gap-4 text-center" },
             [
-              { Icon: Brain, label: t.analysis.domain, value: t.domains[analyzedDomain], color: 'text-brand-primary-accent' },
-              { Icon: Sparkles, label: t.analysis.complexity, value: analyzedComplexity === 'complex' ? t.analysis.complex : t.analysis.simple, color: 'text-brand-secondary-accent' },
-              { Icon: AlertCircle, label: t.analysis.recommendation, value: recommendedType, color: 'text-brand-info' }
+              { Icon: Brain, label: t.analysis.domain, value: t.domains[analyzedDomain], color: 'text-brand-primary' },
+              { Icon: Sparkles, label: t.analysis.complexity, value: analyzedComplexity === 'complex' ? t.analysis.complex : t.analysis.simple, color: 'text-brand-secondary' },
+              { Icon: AlertCircle, label: t.analysis.recommendation, value: levelLabel || recommendedType, color: 'text-brand-accent' }
             ].map(item => React.createElement("div", { key: item.label, className: "p-4 bg-brand-bg/50 rounded-lg" },
               React.createElement(item.Icon, { className: `w-8 h-8 mx-auto mb-2 ${item.color}` }),
               React.createElement("p", { className: "font-semibold text-sm text-brand-text" }, item.label),
@@ -388,16 +417,128 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
             ))
           )
         ),
+        
+        // NEW: Expertise Suggestion Card
+        expertiseSuggestions.length > 0 && React.createElement("div", { className: "bg-brand-card-bg rounded-lg shadow-brand p-6 md:p-8" },
+          React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary/50" }, 
+            language === 'fr' ? 'Suggestion d\'Expertise' : 'Expertise Suggestion'
+          ),
+          React.createElement("div", { className: "space-y-4" },
+            React.createElement("div", { className: "flex flex-wrap gap-2" },
+              expertiseSuggestions.map((suggestion, index) => 
+                React.createElement("button", {
+                  key: index,
+                  onClick: () => {
+                    setChosenRole(suggestion.role);
+                    setCustomExpertRole(''); // Clear custom role when selecting suggestion
+                    setShowCustomExpertInput(false);
+                  },
+                  className: `px-4 py-2 rounded-full border-2 transition-all ${
+                    chosenRole === suggestion.role 
+                      ? 'border-brand-primary bg-brand-primary text-white' 
+                      : 'border-brand-primary text-brand-primary hover:bg-brand-primary/10'
+                  }`
+                },
+                  React.createElement("div", { className: "flex items-center gap-2" },
+                    React.createElement("span", { className: "font-medium" }, suggestion.role),
+                    React.createElement("span", { className: `text-xs px-2 py-1 rounded-full ${
+                      chosenRole === suggestion.role ? 'bg-white/20' : 'bg-brand-primary/20'
+                    }` },
+                      Math.round(suggestion.confidence * 100) + '%'
+                    )
+                  )
+                )
+              )
+            ),
+            React.createElement("div", { className: "flex items-center gap-2" },
+              React.createElement("button", {
+                onClick: () => setShowCustomExpertInput(!showCustomExpertInput),
+                className: "text-brand-primary hover:text-brand-primary/70 font-medium text-sm underline"
+              },
+                language === 'fr' ? 'Personnaliser le rôle' : 'Customize role'
+              )
+            ),
+            showCustomExpertInput && React.createElement("div", { className: "space-y-2" },
+              React.createElement("input", {
+                type: "text",
+                value: customExpertRole,
+                onChange: (e) => {
+                  setCustomExpertRole(e.target.value);
+                  if (e.target.value.trim()) {
+                    setChosenRole(''); // Clear chosen role when typing custom
+                  }
+                },
+                placeholder: language === 'fr' ? 'Ex: Consultant en Stratégie Digitale' : 'Ex: Digital Strategy Consultant',
+                className: "w-full p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none text-base"
+              }),
+              React.createElement("p", { className: "text-sm text-brand-muted-text italic" },
+                language === 'fr' 
+                  ? 'Décrivez le rôle d\'expert que vous souhaitez que l\'IA adopte'
+                  : 'Describe the expert role you want the AI to adopt'
+              )
+            ),
+            chosenRole && React.createElement("div", { className: "mt-4 p-3 bg-brand-secondary/10 rounded-lg" },
+              React.createElement("p", { className: "text-sm text-brand-text" },
+                React.createElement("span", { className: "font-semibold" },
+                  language === 'fr' ? 'Rôle sélectionné : ' : 'Selected role: '
+                ),
+                React.createElement("span", { className: "text-brand-primary font-medium" }, chosenRole)
+              )
+            )
+          )
+        ),
         React.createElement("div", { className: "bg-brand-card-bg rounded-lg shadow-brand p-6 md:p-8" },
-          React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary-accent/50" }, t.approach.title),
-          React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
+          React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary/50" }, 
+            language === 'fr' ? 'Niveau de Structure' : 'Structure Level'
+          ),
+          promptMetadata && React.createElement("div", { className: "mb-4 p-3 bg-brand-tertiary/10 rounded-lg" },
+            React.createElement("p", { className: "text-sm text-brand-text" },
+              React.createElement("span", { className: "font-semibold" },
+                language === 'fr' ? 'Recommandé : ' : 'Recommended: '
+              ),
+              React.createElement("span", { className: "text-brand-primary font-medium" }, 
+                levelLabel || (
+                  language === 'fr' ? 'Pro & Structuré' : 'Pro & Structured'
+                )
+              ),
+              React.createElement("span", { className: "ml-2 text-brand-muted-text" },
+                promptMetadata && `(${language === 'fr' ? 'Complexité' : 'Complexity'}: ${promptMetadata.complexity}/10)`
+              )
+            )
+          ),
+          React.createElement("div", { className: "grid md:grid-cols-3 gap-4" },
             [
-              { type: 'MVP', title: t.approach.mvp.title, subtitle: t.approach.mvp.subtitle, description: t.approach.mvp.description },
-              { type: 'AGENTIC', title: t.approach.agentique.title, subtitle: t.approach.agentique.subtitle, description: t.approach.agentique.description }
+              { 
+                type: 'QUICK_TASK', 
+                title: language === 'fr' ? 'Rapide & Structuré' : 'Quick & Structured',
+                subtitle: language === 'fr' ? 'Tâches simples et directes' : 'Simple and direct tasks',
+                description: language === 'fr' ? 'Réponse structurée sans complexité excessive. Parfait pour des demandes courtes et précises.' : 'Structured response without excessive complexity. Perfect for short and precise requests.'
+              },
+              { 
+                type: 'ANALYTICAL', 
+                title: language === 'fr' ? 'Pro & Structuré' : 'Pro & Structured',
+                subtitle: language === 'fr' ? 'Projets professionnels' : 'Professional projects',
+                description: language === 'fr' ? 'Analyse détaillée avec sections, exemples et recommandations actionnables.' : 'Detailed analysis with sections, examples and actionable recommendations.'
+              },
+              { 
+                type: 'FULL_AGENTIC', 
+                title: language === 'fr' ? 'Stratégie & Itérations' : 'Strategy & Iterations',
+                subtitle: language === 'fr' ? 'Complexité maximale' : 'Maximum complexity',
+                description: language === 'fr' ? 'Auto-évaluation, itération guidée et amélioration continue du résultat.' : 'Self-assessment, guided iteration and continuous improvement of the result.'
+              }
             ].map(item => React.createElement("button", {
               key: item.type,
-              onClick: () => setPromptType(item.type),
-              className: `p-5 rounded-lg border-2 text-left transition-all ${promptType === item.type ? 'border-brand-primary-accent bg-brand-primary-accent/10 ring-2 ring-brand-primary-accent' : 'border-gray-300 hover:border-brand-primary-accent/70 hover:bg-brand-primary-accent/5'}`
+              onClick: () => {
+                // Map new types to old promptType for backward compatibility
+                const mappedType = item.type === 'FULL_AGENTIC' ? 'AGENTIC' : 'MVP';
+                setPromptType(mappedType);
+                setLevelLabel(item.title); // Store the visible level label
+              },
+              className: `p-5 rounded-lg border-2 text-left transition-all ${
+                levelLabel === item.title || (!levelLabel && ((item.type === 'FULL_AGENTIC' && promptType === 'AGENTIC') || (item.type !== 'FULL_AGENTIC' && promptType === 'MVP')))
+                  ? 'border-brand-primary bg-brand-primary/10 ring-2 ring-brand-primary' 
+                  : 'border-gray-300 hover:border-brand-primary/70 hover:bg-brand-primary/5'
+              }`
             },
               React.createElement("h3", { className: "text-lg font-semibold text-brand-text mb-1" }, item.title),
               React.createElement("p", { className: "text-xs text-brand-muted-text mb-2" }, item.subtitle),
@@ -417,7 +558,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
             ),
             React.createElement("button", {
               onClick: goToStep3WithAutoFill,
-              className: "px-5 py-2.5 bg-brand-primary-accent text-white rounded-lg font-semibold hover:bg-opacity-80 transition-all flex items-center gap-2 text-sm"
+              className: "px-5 py-2.5 bg-brand-primary text-white rounded-lg font-semibold hover:bg-opacity-80 transition-all flex items-center gap-2 text-sm"
             },
               t.variables.next,
               React.createElement(ChevronRight, { className: "w-4 h-4" })
@@ -426,7 +567,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
         )
       ),
       step === 3 && React.createElement("div", { className: "bg-brand-card-bg rounded-lg shadow-brand p-6 md:p-8" },
-        React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary-accent/50" }, t.variables.title),
+        React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary/50" }, t.variables.title),
         React.createElement("div", { className: "space-y-5" },
           [ // Dropdowns
             { labelToken: 'domain', value: selectedDomain, onChange: (e) => setSelectedDomain(e.target.value), optionsSource: DOMAIN_OPTIONS, optionsLabelNamespace: 'domains' },
@@ -436,7 +577,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
             React.createElement("select", { 
               value: item.value, 
               onChange: item.onChange, 
-              className: "w-full p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary-accent focus:ring-1 focus:ring-brand-primary-accent outline-none text-base" 
+              className: "w-full p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none text-base" 
             },
               item.optionsSource.map(opt => React.createElement("option", { key: opt.value, value: opt.value }, t[item.optionsLabelNamespace][opt.labelToken]))
             )
@@ -463,14 +604,14 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
                   value: item.value, 
                   onChange: item.onChange, 
                   placeholder: t.variables[item.placeholderToken], 
-                  className: "w-full p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary-accent focus:ring-1 focus:ring-brand-primary-accent outline-none text-base" 
+                  className: "w-full p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none text-base" 
                 })
               : React.createElement("textarea", { 
                   id: item.id,
                   value: item.value, 
                   onChange: item.onChange, 
                   placeholder: t.variables[item.placeholderToken], 
-                  className: "w-full h-32 p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary-accent focus:ring-1 focus:ring-brand-primary-accent outline-none resize-none text-base" 
+                  className: "w-full h-32 p-3 border-2 border-gray-300 rounded-lg focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none resize-none text-base" 
                 })
           ))
         ),
@@ -482,24 +623,83 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
               className: "px-5 py-2.5 border-2 border-brand-error text-brand-error rounded-lg font-semibold hover:bg-brand-error hover:text-white transition-colors text-sm"
             }, t.actions.backToDashboard)
           ),
-          React.createElement("button", { onClick: handleGeneratePrompt, className: "px-5 py-2.5 bg-brand-primary-accent text-white rounded-lg font-semibold hover:bg-opacity-80 transition-all flex items-center gap-2 text-sm" },
+          React.createElement("button", { onClick: handleGeneratePrompt, className: "px-5 py-2.5 bg-brand-primary text-white rounded-lg font-semibold hover:bg-opacity-80 transition-all flex items-center gap-2 text-sm" },
             t.actions.generate, React.createElement(ChevronRight, { className: "w-4 h-4" })
           )
         )
       ),
       step === 4 && React.createElement("div", { className: "bg-brand-card-bg rounded-lg shadow-brand p-6 md:p-8" },
-        React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary-accent/50" }, t.generation.title),
+        React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary/50" }, t.generation.title),
+        
+        // NEW: Enhanced metadata display
+        !isGenerating && promptMetadata && React.createElement("div", { className: "mb-6 p-4 bg-brand-light rounded-lg border border-brand-primary/20" },
+          React.createElement("div", { className: "flex flex-wrap items-center gap-4 text-sm" },
+            React.createElement("span", { className: "flex items-center gap-2" },
+              React.createElement("span", { className: "font-semibold text-brand-text" },
+                language === 'fr' ? 'Rôle appliqué:' : 'Applied role:'
+              ),
+              React.createElement("span", { className: "text-brand-primary font-medium" },
+                customExpertRole || chosenRole || promptMetadata.chosenRole
+              )
+            ),
+            React.createElement("span", { className: "text-brand-muted-text" }, '|'),
+            React.createElement("span", { className: "flex items-center gap-2" },
+              React.createElement("span", { className: "font-semibold text-brand-text" },
+                language === 'fr' ? 'Niveau:' : 'Level:'
+              ),
+              React.createElement("span", { className: "text-brand-primary font-medium" },
+                levelLabel || promptMetadata.levelLabel
+              )
+            ),
+            promptMetadata.formatHints && promptMetadata.formatHints.length > 0 && React.createElement(React.Fragment, null,
+              React.createElement("span", { className: "text-brand-muted-text" }, '|'),
+              React.createElement("span", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "font-semibold text-brand-text" },
+                  language === 'fr' ? 'Format:' : 'Format:'
+                ),
+                React.createElement("span", { className: "text-brand-tertiary font-medium" },
+                  promptMetadata.formatHints.join(', ')
+                )
+              )
+            )
+          )
+        ),
+        
         isGenerating ? React.createElement("div", { className: "text-center py-12" },
-          React.createElement(Loader2, { className: "w-12 h-12 mx-auto animate-spin text-brand-primary-accent mb-4" }),
+          React.createElement(Loader2, { className: "w-12 h-12 mx-auto animate-spin text-brand-primary mb-4" }),
           React.createElement("p", { className: "text-brand-muted-text text-lg" }, t.generation.generating)
         ) : React.createElement(React.Fragment, null,
-          React.createElement("div", { className: "bg-brand-bg/50 rounded-lg border-l-4 border-brand-primary-accent p-4 font-courier text-sm text-brand-text whitespace-pre-wrap max-h-[500px] overflow-y-auto shadow-inner" },
+          React.createElement("div", { className: "bg-brand-bg/50 rounded-lg border-l-4 border-brand-primary p-4 font-courier text-sm text-brand-text whitespace-pre-wrap max-h-[500px] overflow-y-auto shadow-inner" },
             generatedPrompt || "No prompt generated yet."
           ),
+          // NEW: Show iteration button for Stratégie & Itérations level
+          (levelLabel && (levelLabel.includes('Stratégie') || levelLabel.includes('Strategy'))) && React.createElement("div", { className: "mt-4 p-4 bg-brand-accent/10 rounded-lg border border-brand-accent/30" },
+            React.createElement("h3", { className: "text-lg font-semibold text-brand-text mb-2" },
+              language === 'fr' ? 'Évaluation & Amélioration' : 'Evaluation & Improvement'
+            ),
+            React.createElement("p", { className: "text-sm text-brand-muted-text mb-3" },
+              language === 'fr' 
+                ? 'Pour ce niveau avancé, vous pouvez demander à l\'IA d\'évaluer et d\'améliorer le résultat.'
+                : 'For this advanced level, you can ask the AI to evaluate and improve the result.'
+            ),
+            React.createElement("button", {
+              onClick: () => {
+                const iterationPrompt = language === 'fr' 
+                  ? '🤔 Souhaitez-vous que j\'évalue ce résultat par rapport à des critères clés et que je fournisse des suggestions d\'amélioration ? (Oui/Non)'
+                  : '🤔 Would you like me to evaluate this result against key criteria and provide suggestions for improvement? (Yes/No)';
+                setGeneratedPrompt(generatedPrompt + '\n\n' + iterationPrompt);
+              },
+              className: "px-4 py-2 bg-brand-accent text-white rounded-lg font-medium hover:bg-brand-accent/90 transition-colors flex items-center gap-2"
+            },
+              React.createElement(Brain, { className: "w-4 h-4" }),
+              language === 'fr' ? 'Évaluer & Améliorer' : 'Evaluate & Improve'
+            )
+          ),
+          
           React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6" },
-            React.createElement("button", { onClick: copyToClipboard, className: "w-full px-4 py-2.5 bg-brand-primary-accent text-white rounded-lg font-semibold hover:bg-opacity-80 transition-all flex items-center justify-center gap-2 text-sm" }, React.createElement(Copy, { className: "w-4 h-4" }), t.actions.copy),
-            React.createElement("button", { onClick: savePrompt, className: "w-full px-4 py-2.5 border-2 border-brand-primary-accent text-brand-primary-accent rounded-lg font-semibold hover:bg-brand-primary-accent hover:text-white transition-colors flex items-center justify-center gap-2 text-sm" }, React.createElement(Save, { className: "w-4 h-4" }), t.actions.save),
-            React.createElement("button", { onClick: exportPrompt, className: "w-full px-4 py-2.5 border-2 border-brand-primary-accent text-brand-primary-accent rounded-lg font-semibold hover:bg-brand-primary-accent hover:text-white transition-colors flex items-center justify-center gap-2 text-sm" }, React.createElement(Download, { className: "w-4 h-4" }), t.actions.export)
+            React.createElement("button", { onClick: copyToClipboard, className: "w-full px-4 py-2.5 bg-brand-primary text-white rounded-lg font-semibold hover:bg-opacity-80 transition-all flex items-center justify-center gap-2 text-sm" }, React.createElement(Copy, { className: "w-4 h-4" }), t.actions.copy),
+            React.createElement("button", { onClick: savePrompt, className: "w-full px-4 py-2.5 border-2 border-brand-primary text-brand-primary rounded-lg font-semibold hover:bg-brand-primary hover:text-white transition-colors flex items-center justify-center gap-2 text-sm" }, React.createElement(Save, { className: "w-4 h-4" }), t.actions.save),
+            React.createElement("button", { onClick: exportPrompt, className: "w-full px-4 py-2.5 border-2 border-brand-primary text-brand-primary rounded-lg font-semibold hover:bg-brand-primary hover:text-white transition-colors flex items-center justify-center gap-2 text-sm" }, React.createElement(Download, { className: "w-4 h-4" }), t.actions.export)
           ),
           React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4" },
             React.createElement("button", { onClick: resetForm, className: "w-full px-5 py-3 bg-brand-secondary-accent text-brand-text rounded-lg font-semibold hover:bg-opacity-80 transition-all text-base" }, t.actions.newPrompt),

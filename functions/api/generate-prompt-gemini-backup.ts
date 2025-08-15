@@ -1,4 +1,6 @@
-// OpenRouter API generate-prompt.ts
+// Simplified generate-prompt.ts - same pattern as auth endpoints
+
+import { GoogleGenAI } from "@google/genai";
 import type { Language, Domain, OutputLength, PromptType } from '../../types';
 import { translations as appTranslations } from '../../constants';
 import { SecurityHeadersManager } from '../../lib/security.js';
@@ -52,418 +54,6 @@ interface GeneratePromptParams {
   expertRole: string;
   mission: string;
   constraints: string;
-}
-
-// Expertise suggestion types
-interface ExpertiseSuggestion {
-  role: string;
-  confidence: number;
-  rationale: string;
-}
-
-interface ExpertiseSuggestionResult {
-  suggestions: ExpertiseSuggestion[];
-  chosen: ExpertiseSuggestion;
-}
-
-// Task analysis types
-interface TaskAnalysis {
-  complexity: number; // 1-10 scale
-  taskType: string;
-  archetype: string;
-}
-
-/**
- * Analyze task complexity and determine archetype
- */
-function analyzeTask(params: GeneratePromptParams): TaskAnalysis {
-  const { rawRequest, domain, outputLength } = params;
-  const text = rawRequest.toLowerCase();
-  
-  let complexity = 5; // Default medium complexity
-  let taskType = 'general';
-  
-  // Complexity indicators (increase complexity)
-  const complexityIndicators = [
-    { patterns: ['stratégie|strategy', 'planning|planification', 'roadmap'], weight: 2 },
-    { patterns: ['analyse|analysis', 'évaluation|evaluation', 'audit'], weight: 1.5 },
-    { patterns: ['multiple|plusieurs', 'complet|comprehensive', 'détaillé|detailed'], weight: 1 },
-    { patterns: ['étapes|steps', 'processus|process', 'méthodologie|methodology'], weight: 1 },
-    { patterns: ['risques|risks', 'opportunités|opportunities', 'alternatives'], weight: 1.5 },
-    { patterns: ['budget', 'roi', 'kpi', 'metrics|métriques'], weight: 1 },
-    { patterns: ['équipe|team', 'organisation|organization', 'gestion|management'], weight: 1 }
-  ];
-  
-  // Simplicity indicators (decrease complexity)
-  const simplicityIndicators = [
-    { patterns: ['simple', 'basic|basique', 'rapide|quick', 'courte|short'], weight: -1 },
-    { patterns: ['liste|list', 'résumé|summary', 'titre|title'], weight: -1.5 },
-    { patterns: ['exemple|example', 'modèle|template', 'format'], weight: -1 }
-  ];
-  
-  // Calculate complexity
-  [...complexityIndicators, ...simplicityIndicators].forEach(({ patterns, weight }) => {
-    patterns.forEach(pattern => {
-      if (new RegExp(pattern, 'i').test(text)) {
-        complexity += weight;
-      }
-    });
-  });
-  
-  // Domain adjustments
-  const domainComplexityAdjustments = {
-    'legal': 1.5,
-    'finance': 1.5, 
-    'consulting': 1,
-    'healthcare': 1,
-    'engineering': 1,
-    'research': 1,
-    'business': 0.5,
-    'marketing': 0,
-    'sales': -0.5,
-    'hr': 0,
-    'operations': 0.5,
-    'creative': -0.5,
-    'technical': 1
-  };
-  
-  complexity += domainComplexityAdjustments[domain] || 0;
-  
-  // Output length adjustment
-  const lengthAdjustments = { 'short': -1, 'medium': 0, 'long': 1 };
-  complexity += lengthAdjustments[outputLength] || 0;
-  
-  // Clamp to 1-10 range
-  complexity = Math.max(1, Math.min(10, Math.round(complexity)));
-  
-  // Determine task type and archetype
-  if (complexity <= 3) {
-    taskType = 'simple';
-    complexity <= 2 ? (taskType = 'quick_task') : null;
-  } else if (complexity <= 6) {
-    taskType = 'structured';
-  } else {
-    taskType = 'complex';
-    complexity >= 8 ? (taskType = 'strategic') : null;
-  }
-  
-  // Map to internal archetypes
-  const archetypeMapping = {
-    'quick_task': 'QUICK_TASK',
-    'simple': 'STRUCTURED_OUTPUT', 
-    'structured': 'ANALYTICAL',
-    'complex': 'STRATEGIC_PLANNING',
-    'strategic': 'FULL_AGENTIC'
-  };
-  
-  const archetype = archetypeMapping[taskType] || 'ANALYTICAL';
-  
-  return { complexity, taskType, archetype };
-}
-
-/**
- * Map archetype to user-visible level labels
- */
-function mapArchetypeToLevel(archetype: string): string {
-  const mapping = {
-    'QUICK_TASK': 'Rapide & Structuré',
-    'STRUCTURED_OUTPUT': 'Rapide & Structuré', 
-    'ANALYTICAL': 'Pro & Structuré',
-    'CREATIVE_GENERATIVE': 'Pro & Structuré',
-    'STRATEGIC_PLANNING': 'Pro & Structuré',
-    'FULL_AGENTIC': 'Stratégie & Itérations'
-  };
-  
-  return mapping[archetype] || 'Pro & Structuré';
-}
-
-/**
- * Suggest expert roles based on content analysis
- */
-function suggestExpertise(rawRequest: string, domain: Domain, language: Language, taskAnalysis: TaskAnalysis): ExpertiseSuggestionResult {
-  const text = rawRequest.toLowerCase();
-  const { complexity, taskType } = taskAnalysis;
-  
-  // Domain-based role buckets
-  const domainRoles = {
-    business: {
-      fr: ['Stratège Business', 'Consultant Senior', 'Directeur Stratégie', 'Business Analyst', 'Chef de Projet'],
-      en: ['Business Strategist', 'Senior Consultant', 'Strategy Director', 'Business Analyst', 'Project Manager']
-    },
-    marketing: {
-      fr: ['Marketing Manager', 'Growth Hacker', 'Brand Strategist', 'Digital Marketer', 'Content Strategist'],
-      en: ['Marketing Manager', 'Growth Hacker', 'Brand Strategist', 'Digital Marketer', 'Content Strategist']
-    },
-    legal: {
-      fr: ['Juriste d\'entreprise', 'Avocat conseil', 'Compliance Officer', 'Legal Advisor', 'Responsable Juridique'],
-      en: ['Corporate Lawyer', 'Legal Counsel', 'Compliance Officer', 'Legal Advisor', 'Legal Manager']
-    },
-    finance: {
-      fr: ['Analyste Financier', 'CFO', 'Contrôleur de Gestion', 'Investment Analyst', 'Financial Planner'],
-      en: ['Financial Analyst', 'CFO', 'Management Controller', 'Investment Analyst', 'Financial Planner']
-    },
-    hr: {
-      fr: ['DRH', 'HR Business Partner', 'Talent Acquisition', 'Learning & Development', 'Compensation & Benefits'],
-      en: ['HR Director', 'HR Business Partner', 'Talent Acquisition', 'Learning & Development', 'Compensation & Benefits']
-    },
-    sales: {
-      fr: ['Sales Manager', 'Business Developer', 'Account Executive', 'Sales Operations', 'Customer Success'],
-      en: ['Sales Manager', 'Business Developer', 'Account Executive', 'Sales Operations', 'Customer Success']
-    },
-    consulting: {
-      fr: ['Consultant Strategy', 'Senior Associate', 'Principal Consultant', 'Management Consultant', 'Practice Lead'],
-      en: ['Strategy Consultant', 'Senior Associate', 'Principal Consultant', 'Management Consultant', 'Practice Lead']
-    },
-    research: {
-      fr: ['Research Analyst', 'Data Scientist', 'Researcher Senior', 'Innovation Manager', 'Market Researcher'],
-      en: ['Research Analyst', 'Data Scientist', 'Senior Researcher', 'Innovation Manager', 'Market Researcher']
-    },
-    engineering: {
-      fr: ['Architecte logiciel', 'Tech Lead', 'DevOps Engineer', 'Solution Architect', 'Engineering Manager'],
-      en: ['Software Architect', 'Tech Lead', 'DevOps Engineer', 'Solution Architect', 'Engineering Manager']
-    },
-    operations: {
-      fr: ['Operations Manager', 'Process Improvement', 'Supply Chain Manager', 'Quality Manager', 'COO'],
-      en: ['Operations Manager', 'Process Improvement', 'Supply Chain Manager', 'Quality Manager', 'COO']
-    },
-    healthcare: {
-      fr: ['Medical Advisor', 'Health Data Analyst', 'Healthcare Consultant', 'Clinical Research', 'Health Policy'],
-      en: ['Medical Advisor', 'Health Data Analyst', 'Healthcare Consultant', 'Clinical Research', 'Health Policy']
-    },
-    creative: {
-      fr: ['Creative Director', 'UX Designer', 'Content Creator', 'Brand Designer', 'Art Director'],
-      en: ['Creative Director', 'UX Designer', 'Content Creator', 'Brand Designer', 'Art Director']
-    },
-    technical: {
-      fr: ['Technical Architect', 'Senior Developer', 'System Administrator', 'IT Consultant', 'Technology Lead'],
-      en: ['Technical Architect', 'Senior Developer', 'System Administrator', 'IT Consultant', 'Technology Lead']
-    }
-  };
-  
-  const roles = domainRoles[domain]?.[language] || domainRoles[domain]?.['en'] || domainRoles['business'][language];
-  
-  // Keyword-based role boosting
-  const keywordBoosts = {
-    'saas|software|app|application': ['Software Architect', 'Tech Lead', 'Product Manager'],
-    'marketing|campaign|brand|content': ['Marketing Manager', 'Brand Strategist', 'Content Strategist'],
-    'finance|budget|roi|investment': ['Financial Analyst', 'CFO', 'Investment Analyst'],
-    'strategy|strategic|planning': ['Strategy Consultant', 'Business Strategist', 'Strategic Planner'],
-    'legal|contract|compliance|risk': ['Legal Counsel', 'Compliance Officer', 'Risk Manager'],
-    'data|analytics|research|analysis': ['Data Scientist', 'Research Analyst', 'Business Analyst'],
-    'sales|customer|revenue|pipeline': ['Sales Manager', 'Business Developer', 'Customer Success'],
-    'hr|people|talent|recruiting': ['HR Director', 'Talent Acquisition', 'People Operations'],
-    'operations|process|efficiency': ['Operations Manager', 'Process Improvement', 'Operational Excellence']
-  };
-  
-  // Calculate confidence for each role
-  const suggestions: ExpertiseSuggestion[] = roles.map(role => {
-    let confidence = 0.5; // Base confidence
-    
-    // Domain match boost
-    confidence += 0.2;
-    
-    // Keyword matching boost
-    Object.entries(keywordBoosts).forEach(([keywords, boostedRoles]) => {
-      if (new RegExp(keywords, 'i').test(text)) {
-        if (boostedRoles.some(boostedRole => role.toLowerCase().includes(boostedRole.toLowerCase()) || boostedRole.toLowerCase().includes(role.toLowerCase()))) {
-          confidence += 0.15;
-        }
-      }
-    });
-    
-    // Seniority boost based on complexity
-    if (complexity >= 7 && (role.toLowerCase().includes('senior') || role.toLowerCase().includes('director') || role.toLowerCase().includes('lead'))) {
-      confidence += 0.1;
-    }
-    
-    // Task type alignment
-    if (taskType === 'strategic' && (role.toLowerCase().includes('strategy') || role.toLowerCase().includes('consultant'))) {
-      confidence += 0.1;
-    }
-    
-    // Clamp confidence to 0.3-0.95 range
-    confidence = Math.max(0.3, Math.min(0.95, confidence));
-    
-    return {
-      role,
-      confidence: Math.round(confidence * 100) / 100,
-      rationale: generateRationale(role, domain, complexity, language)
-    };
-  });
-  
-  // Sort by confidence and take top suggestions
-  suggestions.sort((a, b) => b.confidence - a.confidence);
-  const topSuggestions = suggestions.slice(0, 4);
-  
-  return {
-    suggestions: topSuggestions,
-    chosen: topSuggestions[0]
-  };
-}
-
-/**
- * Generate rationale for role suggestion
- */
-function generateRationale(role: string, domain: Domain, complexity: number, language: Language): string {
-  const templates = {
-    fr: {
-      domain: `Expertise ${domain}`,
-      complexity: complexity >= 7 ? 'tâche complexe' : complexity >= 5 ? 'niveau intermédiaire' : 'tâche standard',
-      seniority: role.toLowerCase().includes('senior') || role.toLowerCase().includes('director') ? 'niveau senior' : 'spécialisation métier'
-    },
-    en: {
-      domain: `${domain} expertise`,
-      complexity: complexity >= 7 ? 'complex task' : complexity >= 5 ? 'intermediate level' : 'standard task',
-      seniority: role.toLowerCase().includes('senior') || role.toLowerCase().includes('director') ? 'senior level' : 'domain specialization'
-    }
-  };
-  
-  const t = templates[language] || templates.en;
-  return `${t.domain}, ${t.complexity}, ${t.seniority}`;
-}
-
-/**
- * Generate format hints for UI based on archetype and domain
- */
-function generateFormatHints(archetype: string, domain: Domain, language: Language): string[] {
-  const hints = {
-    fr: {
-      'QUICK_TASK': ['Structure simple', 'Réponse directe'],
-      'STRUCTURED_OUTPUT': ['Sections claires', 'Format organisé'],
-      'ANALYTICAL': ['Plan détaillé', 'Exemples concrets', 'Synthèse'],
-      'STRATEGIC_PLANNING': ['Analyse approfondie', 'Multiples options', 'Recommandations'],
-      'FULL_AGENTIC': ['Auto-évaluation', 'Itération guidée', 'Amélioration continue']
-    },
-    en: {
-      'QUICK_TASK': ['Simple structure', 'Direct response'],
-      'STRUCTURED_OUTPUT': ['Clear sections', 'Organized format'],
-      'ANALYTICAL': ['Detailed plan', 'Concrete examples', 'Summary'],
-      'STRATEGIC_PLANNING': ['In-depth analysis', 'Multiple options', 'Recommendations'],
-      'FULL_AGENTIC': ['Self-assessment', 'Guided iteration', 'Continuous improvement']
-    }
-  };
-  
-  const domainHints = {
-    fr: {
-      'marketing': ['CTA explicite', 'Métriques'],
-      'finance': ['Chiffres clés', 'ROI'],
-      'legal': ['Conformité', 'Risques'],
-      'business': ['KPIs', 'Timeline']
-    },
-    en: {
-      'marketing': ['Clear CTA', 'Metrics'],
-      'finance': ['Key figures', 'ROI'],
-      'legal': ['Compliance', 'Risks'],
-      'business': ['KPIs', 'Timeline']
-    }
-  };
-  
-  const baseHints = hints[language]?.[archetype] || hints.en[archetype] || [];
-  const extraHints = domainHints[language]?.[domain] || [];
-  
-  return [...baseHints, ...extraHints].slice(0, 3); // Limit to 3 hints
-}
-
-/**
- * NEW: Build adaptive prompt with 8 sections based on complexity level
- */
-function buildAdaptivePrompt(params: GeneratePromptParams, analysis: TaskAnalysis, effectiveRole: string): { systemInstruction: string, userQuery: string, hints: string[] } {
-  const { rawRequest, domain, language, outputLength, mission, constraints } = params;
-  const { complexity, archetype } = analysis;
-  
-  const levelLabel = mapArchetypeToLevel(archetype);
-  const isLevel3 = levelLabel.includes('Stratégie') || levelLabel.includes('Strategy');
-  
-  // 1. <System> Section
-  const systemSection = language === 'fr' 
-    ? `<System>:\nVous êtes **${effectiveRole}**. Votre mission : ${mission || "aider efficacement"}.\nPriorité : produire un résultat professionnel, clair, immédiatement exploitable.`
-    : `<System>:\nYou are **${effectiveRole}**. Your mission: ${mission || "help effectively"}.\nPriority: deliver a professional, clear, immediately usable result.`;
-
-  // 2. <Context>/<Task> Section  
-  const contextSection = language === 'fr'
-    ? `<Context>:\n${rawRequest}\n\nÉléments clés détectés : Domaine ${domain}, complexité ${complexity}/10, niveau ${levelLabel}.`
-    : `<Context>:\n${rawRequest}\n\nKey elements detected: ${domain} domain, complexity ${complexity}/10, level ${levelLabel}.`;
-
-  // 3. <Methodology> Section - Variable by level
-  let methodologySection = '';
-  if (levelLabel.includes('Rapide') || levelLabel.includes('Quick')) {
-    methodologySection = language === 'fr'
-      ? `<Methodology>:\n1) Comprendre le besoin et clarifier l'objectif en 1 phrase\n2) Structurer la réponse avec titres courts\n3) Vérifier concision et utilité immédiate`
-      : `<Methodology>:\n1) Understand the need and clarify the objective in 1 sentence\n2) Structure response with short titles\n3) Verify conciseness and immediate utility`;
-  } else if (levelLabel.includes('Pro') || levelLabel.includes('Structured')) {
-    methodologySection = language === 'fr'
-      ? `<Methodology>:\n1) Analyse : objectifs, contraintes, critères de succès\n2) Plan : sections, ordre logique, formats attendus\n3) Exécution : rédiger, illustrer par 1–2 exemples, vérifier contre contraintes\n4) Synthèse : recommandations actionnables`
-      : `<Methodology>:\n1) Analysis: objectives, constraints, success criteria\n2) Plan: sections, logical order, expected formats\n3) Execution: write, illustrate with 1-2 examples, verify against constraints\n4) Synthesis: actionable recommendations`;
-  } else { // Stratégie & Itérations
-    methodologySection = language === 'fr'
-      ? `<Methodology>:\n1) Analyse approfondie (objectifs explicites/implicites, risques)\n2) Stratégie (comparaison de 2–3 approches, justification)\n3) Exécution professionnelle (sections + livrables)\n4) Vérification (checklist critères)`
-      : `<Methodology>:\n1) In-depth analysis (explicit/implicit objectives, risks)\n2) Strategy (comparison of 2-3 approaches, justification)\n3) Professional execution (sections + deliverables)\n4) Verification (criteria checklist)`;
-  }
-
-  // 4. <Constraints> Section
-  const constraintsSection = constraints 
-    ? (language === 'fr' 
-        ? `<Constraints>:\n${constraints.split('\n').map(c => c.trim()).filter(c => c).map(c => `• ${c}`).join('\n')}`
-        : `<Constraints>:\n${constraints.split('\n').map(c => c.trim()).filter(c => c).map(c => `• ${c}`).join('\n')}`)
-    : '';
-
-  // 5. <Format> Section
-  const lengthLabels = {
-    fr: { 'short': 'court (≈150 mots)', 'medium': 'moyen (≈300 mots)', 'long': 'long (≈500+ mots)' },
-    en: { 'short': 'short (≈150 words)', 'medium': 'medium (≈300 words)', 'long': 'long (≈500+ words)' }
-  };
-  
-  const formatSection = language === 'fr'
-    ? `<Format>:\n• Longueur : ${lengthLabels.fr[outputLength]}\n• Style : professionnel et actionnable\n• Structure : sections claires avec titres`
-    : `<Format>:\n• Length: ${lengthLabels.en[outputLength]}\n• Style: professional and actionable\n• Structure: clear sections with headings`;
-
-  // 6. <Self-Assessment> Section (Level 3 only)
-  const selfAssessmentSection = isLevel3 
-    ? (language === 'fr' 
-        ? `<Self-Assessment>:\nÀ la fin, demander : "Souhaitez-vous une évaluation contre des critères clés ? (Oui/Non)"\nSi Oui → produire un tableau d'évaluation (Note/10, Justification, Améliorations) sur des critères contextuels (Exactitude, Complétude, Clarté, Impact).`
-        : `<Self-Assessment>:\nAt the end, ask: "Would you like an evaluation against key criteria? (Yes/No)"\nIf Yes → produce an evaluation table (Score/10, Justification, Improvements) on contextual criteria (Accuracy, Completeness, Clarity, Impact).`)
-    : '';
-
-  // 7. <Iteration> Section (Level 3 only)  
-  const iterationSection = isLevel3
-    ? (language === 'fr'
-        ? `<Iteration>:\nAprès l'évaluation, demander : "Souhaitez-vous que j'améliore le brouillon selon ces recommandations ? (Oui/Non)"`
-        : `<Iteration>:\nAfter evaluation, ask: "Would you like me to improve the draft according to these recommendations? (Yes/No)"`)
-    : '';
-
-  // 8. <Example> Section - Adapted to level
-  let exampleSection = '';
-  if (levelLabel.includes('Rapide') || levelLabel.includes('Quick')) {
-    exampleSection = language === 'fr'
-      ? `<Example>:\nTitre : [Titre concret du livrable]\n[2-3 lignes formatées du début de la réponse]`
-      : `<Example>:\nTitle: [Concrete deliverable title]\n[2-3 formatted lines from the beginning of the response]`;
-  } else if (levelLabel.includes('Pro') || levelLabel.includes('Structured')) {
-    exampleSection = language === 'fr'
-      ? `<Example>:\nTitre : [Titre du livrable]\n• [Point clé 1]\n• [Point clé 2]\n• [Point clé 3]`
-      : `<Example>:\nTitle: [Deliverable title]\n• [Key point 1]\n• [Key point 2]\n• [Key point 3]`;
-  } else { // Strategy level
-    exampleSection = language === 'fr'
-      ? `<Example>:\nRésumé exécutif : [2-3 lignes de synthèse]\n\n## [Sous-titre principal]\n[Début du développement structuré]`
-      : `<Example>:\nExecutive Summary: [2-3 lines of synthesis]\n\n## [Main subtitle]\n[Beginning of structured development]`;
-  }
-
-  // Combine all sections
-  const sections = [
-    systemSection,
-    contextSection, 
-    methodologySection,
-    constraintsSection,
-    formatSection,
-    selfAssessmentSection,
-    iterationSection,
-    exampleSection
-  ].filter(section => section.trim().length > 0);
-
-  const systemInstruction = sections.join('\n\n');
-  const userQuery = rawRequest;
-  const hints = generateFormatHints(archetype, domain, language);
-
-  return { systemInstruction, userQuery, hints };
 }
 
 // Enhanced metaPromptTranslations with detailed methodology for both approaches
@@ -699,9 +289,7 @@ const metaPromptTranslations = {
   }
 };
 
-// Model configuration for OpenRouter
-const OPENROUTER_MODEL = 'moonshotai/kimi-k2:free';
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+const GEMINI_MODEL_NAME = 'gemini-2.5-pro-preview-05-06'; // As per user request
 
 // Simple UUID generator (same as register.ts)
 function generateUUID(): string {
@@ -1015,56 +603,11 @@ ${tMeta.agenticFooter}
   return { systemInstruction, userQuery };
 }
 
-/**
- * Call OpenRouter API using OpenAI-compatible interface
- */
-async function callOpenRouter(systemInstruction: string, userQuery: string, apiKey: string): Promise<string> {
-  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://promptomatik.app', // Optional: your site URL
-      'X-Title': 'Promptomatik', // Optional: your site name
-    },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: systemInstruction
-        },
-        {
-          role: 'user',
-          content: userQuery
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 4000,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.text();
-    console.error('OpenRouter API error:', response.status, errorData);
-    throw new Error(`OpenRouter API error: ${response.status}`);
-  }
-
-  const result = await response.json();
-  
-  if (!result.choices || !result.choices[0] || !result.choices[0].message) {
-    console.error('Invalid OpenRouter response structure:', result);
-    throw new Error('Invalid response from OpenRouter API');
-  }
-
-  return result.choices[0].message.content;
-}
-
 export const onRequestPost = async (context: any) => {
   const { request, env } = context;
   
   try {
-    console.log('=== GENERATE PROMPT ENDPOINT (OpenRouter) ===');
+    console.log('=== GENERATE PROMPT ENDPOINT ===');
     
     // Basic environment check
     if (!env.JWT_SECRET) {
@@ -1081,12 +624,12 @@ export const onRequestPost = async (context: any) => {
       return SecurityHeadersManager.addSecurityHeaders(errorResponse);
     }
     
-    if (!env.OPENROUTER_API_KEY) {
+    if (!env.API_KEY) {
       const errorResponse = new Response(JSON.stringify({
         success: false,
         error: {
           code: 'CONFIG_ERROR',
-          message: 'OpenRouter API key configuration missing'
+          message: 'API key configuration missing'
         }
       }), {
         status: 503,
@@ -1135,32 +678,32 @@ export const onRequestPost = async (context: any) => {
     const params: GeneratePromptParams = await request.json();
     console.log('Generating prompt for user:', user.userId);
     
-    // NEW: Analyze task complexity and suggest expertise
-    const analysis = analyzeTask(params);
-    const { suggestions, chosen } = suggestExpertise(params.rawRequest, params.domain, params.language, analysis);
+    // Get translations
+    const tMeta = metaPromptTranslations[params.language] || metaPromptTranslations.en;
     
-    // Use user-provided role or fall back to AI suggestion
-    const effectiveRole = params.expertRole?.trim() ? params.expertRole : chosen.role;
-    
-    // Override params with effective role for prompt generation
-    const enhancedParams = { ...params, expertRole: effectiveRole };
-    
-    console.log('Task analysis:', { complexity: analysis.complexity, archetype: analysis.archetype, chosenRole: effectiveRole });
-    
-    // NEW: Build adaptive prompt with 8 sections
-    const { systemInstruction, userQuery, hints } = buildAdaptivePrompt(enhancedParams, analysis, effectiveRole);
+    // Build prompt query
+    const { systemInstruction, userQuery } = buildPromptQuery(params, tMeta);
 
-    // Call OpenRouter API
-    const result = await callOpenRouter(systemInstruction, userQuery, env.OPENROUTER_API_KEY);
+    // Initialize Gemini AI
+    const ai = new GoogleGenAI({ apiKey: env.API_KEY });
+
+    // Call Gemini API
+    const result = await ai.models.generateContent({
+      model: GEMINI_MODEL_NAME,
+      contents: userQuery,
+      config: {
+        systemInstruction: systemInstruction,
+      }
+    });
      
-    if (!result || typeof result !== 'string') {
-      throw new Error('Invalid response from OpenRouter API');
+    if (!result || typeof result.text !== 'string') {
+      throw new Error('Invalid response from Gemini API');
     }
 
     console.log('Prompt generated successfully for user:', user.userId);
 
     // Parse AI response to extract title and prompt content
-    const { title: aiTitle, prompt: promptContent } = parseAIResponse(result, params.language);
+    const { title: aiTitle, prompt: promptContent } = parseAIResponse(result.text, params.language);
     
     // Use AI-generated title, fallback to algorithmic generation if needed
     let finalTitle = aiTitle;
@@ -1179,10 +722,8 @@ export const onRequestPost = async (context: any) => {
             id, user_id, title, raw_request, generated_prompt,
             prompt_type, domain, language, output_length,
             expert_role, mission, constraints, is_favorite,
-            chosen_role, expertise_suggestions, complexity,
-            archetype, level_label, task_type,
             created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         `).bind(
           promptId,
           user.userId,
@@ -1196,13 +737,7 @@ export const onRequestPost = async (context: any) => {
           params.expertRole || null,
           params.mission || null,
           params.constraints || null,
-          0, // is_favorite - false by default
-          effectiveRole,
-          JSON.stringify(suggestions),
-          analysis.complexity,
-          analysis.archetype,
-          mapArchetypeToLevel(analysis.archetype),
-          analysis.taskType
+          0 // is_favorite - false by default
         ).run();
         
         console.log('Prompt saved to library with ID:', promptId);
@@ -1214,16 +749,7 @@ export const onRequestPost = async (context: any) => {
 
     const response = new Response(JSON.stringify({
       success: true,
-      prompt: promptContent,
-      metadata: {
-        complexity: analysis.complexity,
-        archetype: analysis.archetype,
-        levelLabel: mapArchetypeToLevel(analysis.archetype),
-        expertiseSuggestions: suggestions,
-        chosenRole: effectiveRole,
-        formatHints: hints, // Use hints from buildAdaptivePrompt
-        taskType: analysis.taskType
-      }
+      prompt: promptContent
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

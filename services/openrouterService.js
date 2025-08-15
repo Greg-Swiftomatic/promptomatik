@@ -1,10 +1,10 @@
 
-// File: services/geminiService.js
+// File: services/openrouterService.js
 
 import { translations } from '../constants.js';
 import apiService from './apiService.js';
 
-export const generateStructuredPromptWithGemini = async (params) => {
+export const generateStructuredPromptWithOpenRouter = async (params) => {
   const t = translations[params.language] || translations.en;
 
   try {
@@ -14,7 +14,11 @@ export const generateStructuredPromptWithGemini = async (params) => {
     });
 
     if (result.prompt) {
-      return result.prompt;
+      // NEW: Return enhanced response with metadata if available
+      return {
+        prompt: result.prompt,
+        metadata: result.metadata || null
+      };
     } else if (result.error) {
       console.error("Error from backend:", result.error);
       throw new Error(result.error);
