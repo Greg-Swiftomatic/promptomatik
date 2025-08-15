@@ -19,8 +19,8 @@ id = "0a86dc1ccbb34ec2a505bfc0eb5e5401"
 
 # Environment variables (set these via wrangler secret put)
 [vars]
-ENVIRONMENT = "development" # Change to "development" for local testing
-ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8788,http://127.0.0.1:8788" # Update with your actual domains
+ENVIRONMENT = "production"
+ALLOWED_ORIGINS = "https://promptomatik.pages.dev,http://localhost:3000,http://127.0.0.1:3000,http://localhost:8788,http://127.0.0.1:8788"
 
 # Secrets (set via wrangler secret put)
 # Run these commands to set your secrets:
