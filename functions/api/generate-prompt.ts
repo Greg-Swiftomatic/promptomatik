@@ -699,9 +699,9 @@ const metaPromptTranslations = {
   }
 };
 
-// Model configuration for OpenRouter
-const OPENROUTER_MODEL = 'moonshotai/kimi-k2:free';
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+// Model configuration for Google Gemini
+const GEMINI_MODEL = 'gemini-2.5-pro';
+const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 
 // Simple UUID generator (same as register.ts)
 function generateUUID(): string {
@@ -1018,56 +1018,54 @@ ${tMeta.agenticFooter}
 /**
  * Call OpenRouter API using OpenAI-compatible interface
  */
-async function callOpenRouter(systemInstruction: string, userQuery: string, apiKey: string): Promise<string> {
-  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+async function callGemini(systemInstruction: string, userQuery: string, apiKey: string): Promise<string> {
+  // Combine system instruction and user query for Gemini
+  const combinedPrompt = `${systemInstruction}\n\n${userQuery}`;
+  
+  const response = await fetch(`${GEMINI_BASE_URL}/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://promptomatik.app', // Optional: your site URL
-      'X-Title': 'Promptomatik', // Optional: your site name
     },
     body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: systemInstruction
-        },
-        {
-          role: 'user',
-          content: userQuery
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 4000,
+      contents: [{
+        parts: [{
+          text: combinedPrompt
+        }]
+      }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 4000,
+        topK: 40,
+        topP: 0.95,
+      }
     }),
   });
 
   if (!response.ok) {
     const errorData = await response.text();
-    console.error('OpenRouter API error:', response.status, errorData);
-    throw new Error(`OpenRouter API error: ${response.status}`);
+    console.error('Gemini API error:', response.status, errorData);
+    throw new Error(`Gemini API error: ${response.status}`);
   }
 
   const result = await response.json();
   
-  if (!result.choices || !result.choices[0] || !result.choices[0].message) {
-    console.error('Invalid OpenRouter response structure:', result);
-    throw new Error('Invalid response from OpenRouter API');
+  if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0]) {
+    console.error('Invalid Gemini response structure:', result);
+    throw new Error('Invalid response from Gemini API');
   }
 
-  return result.choices[0].message.content;
+  return result.candidates[0].content.parts[0].text;
 }
 
 export const onRequestPost = async (context: any) => {
   const { request, env } = context;
   
   try {
-    console.log('=== GENERATE PROMPT ENDPOINT (OpenRouter) ===');
+    console.log('=== GENERATE PROMPT ENDPOINT (Gemini) ===');
     
     // Basic environment check
-    if (!env.JWT_SECRET) {
+    if (!env.JWT_SECRET || !env.GEMINI_API_KEY) {
       const errorResponse = new Response(JSON.stringify({
         success: false,
         error: {
@@ -1081,19 +1079,6 @@ export const onRequestPost = async (context: any) => {
       return SecurityHeadersManager.addSecurityHeaders(errorResponse);
     }
     
-    if (!env.OPENROUTER_API_KEY) {
-      const errorResponse = new Response(JSON.stringify({
-        success: false,
-        error: {
-          code: 'CONFIG_ERROR',
-          message: 'OpenRouter API key configuration missing'
-        }
-      }), {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' }
-      });
-      return SecurityHeadersManager.addSecurityHeaders(errorResponse);
-    }
     
     // Get token from Authorization header
     const authHeader = request.headers.get('Authorization');
@@ -1150,11 +1135,11 @@ export const onRequestPost = async (context: any) => {
     // NEW: Build adaptive prompt with 8 sections
     const { systemInstruction, userQuery, hints } = buildAdaptivePrompt(enhancedParams, analysis, effectiveRole);
 
-    // Call OpenRouter API
-    const result = await callOpenRouter(systemInstruction, userQuery, env.OPENROUTER_API_KEY);
+    // Call Gemini API
+    const result = await callGemini(systemInstruction, userQuery, env.GEMINI_API_KEY);
      
     if (!result || typeof result !== 'string') {
-      throw new Error('Invalid response from OpenRouter API');
+      throw new Error('Invalid response from Gemini API');
     }
 
     console.log('Prompt generated successfully for user:', user.userId);
@@ -1188,7 +1173,7 @@ export const onRequestPost = async (context: any) => {
           user.userId,
           finalTitle,
           params.rawRequest,
-          promptContent,
+          completePrompt,
           params.promptType,
           params.domain,
           params.language,
@@ -1212,9 +1197,12 @@ export const onRequestPost = async (context: any) => {
       }
     }
 
+    // Combine system instruction and user query into the complete prompt
+    const completePrompt = `${systemInstruction}\n\n---\n\n${userQuery}`;
+
     const response = new Response(JSON.stringify({
       success: true,
-      prompt: promptContent,
+      prompt: completePrompt,
       metadata: {
         complexity: analysis.complexity,
         archetype: analysis.archetype,
