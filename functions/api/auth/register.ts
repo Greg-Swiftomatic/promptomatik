@@ -1,6 +1,6 @@
 // Secure registration endpoint with proper password hashing and validation
-import { EdgeBcrypt, InputValidator, AuthUtils, AUTH_ERRORS } from '../../../lib/auth-utils.ts';
-import { SecurityMiddleware, RATE_LIMIT_CONFIGS } from '../../../lib/security.ts';
+import { EdgeBcrypt, InputValidator, AuthUtils, AUTH_ERRORS } from '../../../lib/auth-utils.js';
+import { SecurityMiddleware, RATE_LIMIT_CONFIGS } from '../../../lib/security.js';
 
 // Simple UUID generator (avoiding external imports)
 function generateUUID(): string {
