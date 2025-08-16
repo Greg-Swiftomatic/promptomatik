@@ -490,3 +490,378 @@ Frontend (App.js)           API Backend                    Database
 - Architecture backend scalable et analytics-ready
 
 **🎯 RÉSULTAT FINAL : Outil éducatif transformé en plateforme business professionelle révolutionnaire !**
+
+---
+
+## 🚀 **PHASE 4 - PRODUCTION READINESS & OPTIMIZATION PLAN**
+
+### **Status:** 📋 PLANIFIÉ - Prêt pour exécution
+
+### **Objectif:** Préparer Promptomatik pour un déploiement production robuste avec optimisations performances, qualité et monitoring
+
+---
+
+### 🎯 **PRIORITÉS CRITIQUES**
+
+#### **P0 - Fixes Bloquants (Critiques)**
+- [ ] **Fix duplicate keys "agenticTitleInstruction"** dans generate-prompt.ts (erreurs compilation)
+- [ ] **Clean backup files** (generate-prompt-gemini-backup.ts causes warnings)
+- [ ] **Test end-to-end flow** avec tous les niveaux et domaines
+- [ ] **Validate expertise suggestions** accuracy pour tous les cas d'usage
+
+#### **P1 - Qualité & Stabilité (Importantes)**
+- [ ] **Code cleanup & documentation** - Remove deprecated code, add JSDoc
+- [ ] **Error handling enhancement** - Robust fallbacks, user-friendly error messages
+- [ ] **Performance audit** - API response times, bundle size optimization
+- [ ] **Security review** - Input validation, rate limiting verification
+
+#### **P2 - UX & Polish (Souhaitables)**
+- [ ] **Loading states improvement** - Better feedback during generation
+- [ ] **Mobile responsive testing** - Ensure perfect mobile experience
+- [ ] **A11y compliance check** - Screen readers, keyboard navigation
+- [ ] **Copy improvements** - Polish all user-facing text
+
+#### **P3 - Analytics & Monitoring (Futures)**
+- [ ] **Analytics implementation** - Track usage patterns, popular domains
+- [ ] **Performance monitoring** - Response times, error rates
+- [ ] **User feedback system** - Collect improvement suggestions
+- [ ] **A/B testing framework** - Test new features safely
+
+---
+
+### 📋 **DETAILED TODO ITEMS**
+
+#### ✅ **Étape 1: Fixes Critiques (P0)**
+
+##### 🐛 **Fix Compilation Warnings**
+- [ ] Remove duplicate `agenticTitleInstruction` keys in generate-prompt.ts:581 and :696
+- [ ] Remove duplicate `agenticTitleInstruction` keys in generate-prompt.ts:536 and :651 
+- [ ] Delete or rename `functions/api/generate-prompt-gemini-backup.ts` (causes warnings)
+- [ ] Test compilation: `wrangler pages dev .` should run without warnings
+
+##### 🧪 **End-to-End Testing**
+- [ ] Test all 13 domains with sample prompts (business, marketing, legal, finance, etc.)
+- [ ] Verify all 3 structure levels work correctly:
+  - "Rapide & Structuré" for simple tasks (complexity 1-3)
+  - "Pro & Structuré" for medium tasks (complexity 4-6)  
+  - "Stratégie & Itérations" for complex tasks (complexity 7-10)
+- [ ] Test expertise suggestions for accuracy:
+  - Marketing → Marketing Manager, Growth Hacker, Brand Strategist
+  - Finance → Financial Analyst, CFO, Management Controller
+  - Legal → Corporate Lawyer, Legal Counsel, Compliance Officer
+- [ ] Validate FR/EN language consistency in all generated prompts
+- [ ] Test user role customization flow ("Personnaliser le rôle")
+
+#### ✅ **Étape 2: Code Quality & Performance (P1)**
+
+##### 🧹 **Code Cleanup**
+- [ ] Remove all console.log statements from production code
+- [ ] Add JSDoc documentation to key functions:
+  - `suggestExpertise()`
+  - `analyzeTask()`  
+  - `buildAdaptivePrompt()`
+  - `mapArchetypeToLevel()`
+- [ ] Clean up commented code and TODO items
+- [ ] Ensure consistent code formatting (Prettier)
+
+##### 🛡️ **Error Handling Enhancement**
+- [ ] Add input validation for all API endpoints
+- [ ] Implement graceful fallbacks for API failures
+- [ ] Add user-friendly error messages (vs technical errors)
+- [ ] Test rate limiting behavior and error responses
+- [ ] Add request timeout handling
+
+##### ⚡ **Performance Optimization**
+- [ ] Audit bundle size and identify optimization opportunities
+- [ ] Implement code splitting for faster initial load
+- [ ] Optimize image assets and fonts
+- [ ] Test API response times under load
+- [ ] Add caching headers for static assets
+
+##### 🔒 **Security Review**
+- [ ] Validate JWT implementation security
+- [ ] Test input sanitization for XSS prevention  
+- [ ] Review CORS settings in wrangler.toml
+- [ ] Test rate limiting effectiveness
+- [ ] Audit environment variable handling
+
+#### ✅ **Étape 3: UX Polish & Accessibility (P2)**
+
+##### 🎨 **User Experience Enhancement**
+- [ ] Improve loading states during prompt generation
+- [ ] Add skeleton loaders for better perceived performance
+- [ ] Polish micro-interactions and hover states
+- [ ] Test and optimize mobile responsive behavior
+- [ ] Add better visual feedback for user actions
+
+##### ♿ **Accessibility Compliance**
+- [ ] Test with screen readers (NVDA, JAWS, VoiceOver)
+- [ ] Ensure proper keyboard navigation throughout app
+- [ ] Add ARIA labels and descriptions where needed
+- [ ] Verify color contrast ratios meet WCAG standards
+- [ ] Test with browser zoom up to 200%
+
+##### 📝 **Content & Copy Polish**
+- [ ] Review all user-facing text for clarity and consistency
+- [ ] Ensure professional tone throughout
+- [ ] Add helpful tooltips and contextual help
+- [ ] Polish error messages to be actionable
+- [ ] Verify translations accuracy FR/EN
+
+#### ✅ **Étape 4: Analytics & Monitoring Setup (P3)**
+
+##### 📊 **Analytics Implementation**
+- [ ] Set up Cloudflare Web Analytics
+- [ ] Track key user actions:
+  - Domain selection patterns
+  - Expertise suggestion acceptance rates
+  - Structure level usage distribution
+  - Custom role override frequency
+- [ ] Monitor prompt generation success/failure rates
+- [ ] Track user session duration and engagement
+
+##### 📈 **Performance Monitoring**
+- [ ] Set up error tracking and alerting
+- [ ] Monitor API response times and bottlenecks
+- [ ] Track resource usage (D1 queries, KV operations)
+- [ ] Set up uptime monitoring for production deployment
+
+##### 🔬 **User Research & Feedback**
+- [ ] Add optional feedback form for generated prompts
+- [ ] Implement rating system for suggestion quality
+- [ ] Set up user research interviews for UX insights
+- [ ] Create A/B testing framework for future features
+
+---
+
+### 🎯 **SUCCESS METRICS FOR PHASE 4**
+
+| Metric | Current | Target | Measurement |
+|--------|---------|---------|-------------|
+| **Compilation Warnings** | 6 warnings | 0 warnings | `wrangler pages dev .` |
+| **End-to-End Test Pass Rate** | Unknown | 100% | Manual testing |
+| **API Response Time** | Unknown | <2s | Performance testing |
+| **Mobile Usability** | Unknown | 100% | Responsive testing |
+| **Accessibility Score** | Unknown | A+ (WCAG 2.1) | Lighthouse audit |
+| **Bundle Size** | Unknown | <500KB | Webpack analysis |
+
+---
+
+### 📁 **FILES TO MODIFY PRIORITY ORDER**
+
+1. **functions/api/generate-prompt.ts** - Fix duplicate keys, add error handling
+2. **App.js** - Polish UX, improve loading states, add error boundaries  
+3. **constants.js** - Clean up and document all constants
+4. **index.html** - Optimize meta tags, add analytics scripts
+5. **services/openrouterService.js** - Add error handling and performance optimization
+6. **New: monitoring.js** - Analytics and performance tracking
+7. **New: tests/** - End-to-end testing suite
+
+---
+
+### 🚧 **DEVELOPMENT WORKFLOW**
+
+1. **Fix Critical Issues** (P0) - Ensure app runs without warnings
+2. **Test Thoroughly** - Validate all functionality works as specified  
+3. **Quality Pass** (P1) - Code cleanup, performance, security
+4. **Polish Pass** (P2) - UX refinements, accessibility
+5. **Monitor & Optimize** (P3) - Analytics, monitoring, continuous improvement
+
+---
+
+### 🎉 **PHASE 4 COMPLETION CRITERIA**
+
+✅ **Ready for Production Deployment when:**
+- Zero compilation warnings or errors
+- 100% end-to-end test pass rate  
+- All 13 domains + 3 complexity levels working perfectly
+- Mobile responsive across all devices
+- Accessibility compliance (WCAG 2.1 A+)
+- Performance optimized (<2s load times)
+- Error handling robust and user-friendly
+- Analytics and monitoring implemented
+
+**Estimated Timeline:** 1-2 weeks for complete Phase 4 implementation
+
+**Next Phase:** Phase 5 - Advanced Features (multiplatform, API integrations, advanced analytics)
+
+---
+
+## 🎨 **PHASE 4.5 - LANDING PAGE & AUTHENTICATION REDESIGN PLAN**
+
+### **Status:** 📋 PLANIFIÉ - Landing page moderne + Auth UI cohérente
+
+### **Objectif:** Remplacer la landing page actuelle avec le design moderne fourni et harmoniser l'interface d'authentification
+
+---
+
+### 🎯 **SCOPE DÉTAILLÉ**
+
+#### **🏠 Landing Page Redesign**
+- **Remplacer index.html** avec le nouveau design moderne
+- **Logo URL Update:** Passer de `logo-promptomatik.svg` à `https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/97033be1-8ece-40f6-ff81-285ad37a1b00/public`
+- **Nouvelle palette:** Teal `#1BA39C`, Yellow `#F2D45E`, design premium
+- **Animations avancées:** Morphing shapes, scroll reveals, gradient animations
+- **Typography moderne:** Inter + Instrument Serif
+
+#### **🔐 Authentication System Redesign**  
+- **Match Visual Identity:** Harmoniser avec la nouvelle landing page
+- **Components à refactorer:** Login.js, Register.js, ForgotPassword.js, ResetPassword.js
+- **Design cohérent:** Même palette, fonts, shadows, animations
+- **UX améliorée:** Micro-interactions, loading states, error handling
+
+---
+
+### 📋 **DETAILED TODO ITEMS**
+
+#### ✅ **Étape 1: Landing Page Implementation (Priorité P0)**
+
+##### 🎨 **Replace Index.html**
+- [x] **Backup current index.html** (save as index-old.html)
+- [x] **Replace with new design** provided by user
+- [x] **Update logo URL** from local `logo-promptomatik.svg` to CDN:
+  - Main logo: `https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/97033be1-8ece-40f6-ff81-285ad37a1b00/public`
+  - Footer logo (inverted): Same URL with CSS `filter: brightness(0) invert(1)`
+- [ ] **Test responsive design** on mobile/tablet/desktop
+- [ ] **Validate all animations** (morphing shapes, scroll reveals, counter animations)
+
+##### 🔗 **Navigation & Links**
+- [x] **Verify app.html link** works correctly from landing page
+- [ ] **Test smooth scrolling** to anchor sections (#features, #levels, #example)
+- [ ] **Validate CTA buttons** lead to correct destinations
+- [ ] **Check mobile menu** functionality (if needed)
+
+##### 📱 **Mobile & Performance**
+- [ ] **Test mobile responsiveness** - all breakpoints work
+- [ ] **Optimize loading performance** - fonts, images, animations
+- [ ] **Validate accessibility** - keyboard navigation, screen readers
+- [ ] **Cross-browser testing** - Chrome, Firefox, Safari, Edge
+
+#### ✅ **Étape 2: Logo Update Throughout App (Priorité P0)**
+
+##### 🖼️ **Logo References Audit**
+- [x] **Find all logo references** in codebase:
+  - index.html (already handled in step 1)
+  - app.html main application
+  - Auth components (Login, Register, etc.)
+  - HTML files (forgot-password.html, reset-password.html)
+- [x] **Replace all logo URLs** with: `https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/97033be1-8ece-40f6-ff81-285ad37a1b00/public`
+- [x] **Update favicon references** in all HTML files
+- [ ] **Test logo display** across all pages and components
+
+#### ✅ **Étape 3: Authentication UI Redesign (Priorité P1)**
+
+##### 🎨 **Design System Alignment**
+- [ ] **Extract new design tokens** from landing page:
+  - Colors: `--teal: #1BA39C`, `--yellow: #F2D45E`, etc.
+  - Typography: Inter + Instrument Serif
+  - Shadows: `--shadow-sm`, `--shadow-md`, `--shadow-lg`
+  - Animations: Smooth easings, hover effects
+- [ ] **Create shared CSS variables** for consistency
+- [ ] **Design auth component mockups** to match landing page aesthetic
+
+##### 🔐 **Login.js Redesign**
+- [ ] **Update color scheme** to match new palette (teal primary, modern neutrals)
+- [ ] **Replace fonts** with Inter (body) + Instrument Serif (headings)
+- [ ] **Redesign form elements:**
+  - Input fields with new border radius and focus states
+  - Primary button with teal gradient and hover effects
+  - Secondary links with proper spacing and typography
+- [ ] **Add micro-interactions:**
+  - Input focus animations
+  - Button hover lift effects
+  - Loading state with modern spinner
+  - Error state animations
+
+##### 📝 **Register.js Redesign**
+- [ ] **Apply same design language** as Login
+- [ ] **Enhance password strength indicator** with modern visuals
+- [ ] **Improve form validation feedback** with better visual cues
+- [ ] **Add progress indicators** for multi-step feel
+
+##### 🔑 **ForgotPassword.js & ResetPassword.js Redesign**
+- [ ] **Consistent visual treatment** with login/register
+- [ ] **Clear success/error states** with appropriate icons and messaging
+- [ ] **Smooth transitions** between different states
+
+##### 🧩 **AuthWrapper.js Enhancement**
+- [ ] **Update background styling** to complement new design
+- [ ] **Add subtle animations** for component transitions
+- [ ] **Improve responsive behavior** across all devices
+
+#### ✅ **Étape 4: Testing & Quality Assurance (Priorité P1)**
+
+##### 🧪 **Functional Testing**
+- [ ] **Complete user flows:**
+  - Landing page → Register → App
+  - Landing page → Login → App  
+  - Password reset flow
+  - Logout → Landing page
+- [ ] **Cross-device testing** - Mobile, tablet, desktop
+- [ ] **Animation performance** - Smooth on all devices
+- [ ] **Logo display verification** - All instances show correctly
+
+##### 🎯 **UX/UI Quality**
+- [ ] **Design consistency audit** - Landing page matches auth pages
+- [ ] **Typography hierarchy** - Proper heading/body text relationships
+- [ ] **Color accessibility** - Proper contrast ratios (WCAG compliance)
+- [ ] **Interactive states** - Hover, focus, active states work properly
+
+##### ⚡ **Performance Validation**
+- [ ] **Page load times** - Landing page loads quickly
+- [ ] **Animation smoothness** - No jank or lag
+- [ ] **Image optimization** - Logo loads efficiently from CDN
+- [ ] **Font loading** - FOIT/FOUT handled gracefully
+
+---
+
+### 🎯 **SUCCESS METRICS FOR PHASE 4.5**
+
+| Metric | Current | Target | Measurement |
+|--------|---------|---------|-------------|
+| **Design Consistency** | Mismatched | 100% aligned | Visual audit |
+| **Logo Display** | Local SVG | CDN hosted | All pages |
+| **Mobile Responsiveness** | Basic | Perfect | All breakpoints |
+| **Animation Performance** | N/A | 60fps | Performance tools |
+| **User Flow Completion** | Unknown | 100% success | Manual testing |
+| **Accessibility Score** | Unknown | A+ (WCAG 2.1) | Lighthouse audit |
+
+---
+
+### 📁 **FILES TO MODIFY PRIORITY ORDER**
+
+1. **index.html** - Complete replacement with new landing page
+2. **App.js** - Update logo URL references  
+3. **auth/Login.js** - Redesign to match new visual identity
+4. **auth/Register.js** - Apply consistent design language
+5. **auth/ForgotPassword.js** - Align with new design system
+6. **auth/ResetPassword.js** - Consistent styling
+7. **auth/AuthWrapper.js** - Background and layout updates
+8. **constants.js** - Add new design tokens if needed
+
+---
+
+### 🚧 **DEVELOPMENT WORKFLOW**
+
+1. **Landing Page First** - Replace index.html and test thoroughly
+2. **Logo Update** - Find and replace all logo references
+3. **Auth Design** - Redesign authentication components systematically  
+4. **Integration Testing** - Ensure seamless user experience across all flows
+5. **Polish & Optimization** - Fine-tune animations and performance
+
+---
+
+### 🎉 **PHASE 4.5 COMPLETION CRITERIA**
+
+✅ **Ready when:**
+- New landing page fully implemented and responsive
+- All logo references updated to CDN URL
+- Authentication pages match landing page design 100%
+- All user flows work seamlessly (landing → auth → app)
+- Mobile experience is perfect across all pages
+- Animations are smooth and performant
+- Design consistency audit passes 100%
+
+**Estimated Timeline:** 2-3 days for complete Phase 4.5 implementation
+
+**Next:** Continue with Phase 4 Production Readiness tasks
