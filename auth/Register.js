@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Check } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Check, User } from 'lucide-react';
 import { useAuth } from './AuthContext.js';
 
 const Register = ({ onSwitchToLogin, translations }) => {
@@ -117,12 +117,17 @@ const Register = ({ onSwitchToLogin, translations }) => {
 
   const passwordRequirements = validatePassword(formData.password);
 
-  return React.createElement("div", { className: "min-h-screen bg-brand-bg flex items-center justify-center px-4 sm:px-6 lg:px-8" },
+  return React.createElement("div", { 
+    className: "min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8",
+    style: { 
+      background: "linear-gradient(180deg, #FFFFFF 0%, #F8F9FA 100%)"
+    }
+  },
     React.createElement("div", { className: "max-w-md w-full space-y-8" },
       React.createElement("div", { className: "text-center" },
         React.createElement("img", {
-          src: "https://res.cloudinary.com/ducvoebot/image/upload/v1747991665/Teachinspire_logo_transparent_yjt3uf.png",
-          alt: "Teachinspire Logo",
+          src: "https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/97033be1-8ece-40f6-ff81-285ad37a1b00/public",
+          alt: "Promptomatik Logo",
           className: "mx-auto h-16 w-auto mb-6"
         }),
         React.createElement("h2", { className: "font-playfair text-3xl font-bold text-brand-text mb-2" }, t.auth.register.title),

@@ -82,29 +82,54 @@ const Login = ({ onSwitchToRegister, onSwitchToForgotPassword, translations }) =
     }
   };
 
-  return React.createElement("div", { className: "min-h-screen bg-brand-bg flex items-center justify-center px-4 sm:px-6 lg:px-8" },
+  return React.createElement("div", { 
+    className: "min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8",
+    style: { 
+      background: "linear-gradient(180deg, #FFFFFF 0%, #F8F9FA 100%)"
+    }
+  },
     React.createElement("div", { className: "max-w-md w-full space-y-8" },
       React.createElement("div", { className: "text-center" },
         React.createElement("img", {
-          src: "https://res.cloudinary.com/ducvoebot/image/upload/v1747991665/Teachinspire_logo_transparent_yjt3uf.png",
-          alt: "Teachinspire Logo",
+          src: "https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/97033be1-8ece-40f6-ff81-285ad37a1b00/public",
+          alt: "Promptomatik Logo",
           className: "mx-auto h-16 w-auto mb-6"
         }),
-        React.createElement("h2", { className: "font-playfair text-3xl font-bold text-brand-text mb-2" }, t.auth.login.title),
-        React.createElement("p", { className: "text-brand-muted-text" }, t.auth.login.subtitle)
+        React.createElement("h2", { 
+          className: "text-3xl font-bold mb-2",
+          style: { 
+            fontFamily: "Instrument Serif, serif",
+            color: "#0A0A0A"
+          }
+        }, t.auth.login.title),
+        React.createElement("p", { 
+          className: "mb-2",
+          style: { color: "#6B7280" }
+        }, t.auth.login.subtitle)
       ),
 
-      React.createElement("div", { className: "bg-brand-card-bg rounded-lg shadow-brand p-8" },
+      React.createElement("div", { 
+        className: "rounded-lg p-8",
+        style: {
+          background: "#FFFFFF",
+          boxShadow: "0 8px 24px rgba(27,163,156,0.12)",
+          border: "1px solid rgba(27,163,156,0.1)"
+        }
+      },
         React.createElement("form", { onSubmit: handleSubmit, className: "space-y-6" },
           // Email field
           React.createElement("div", null,
             React.createElement("label", { 
               htmlFor: "email", 
-              className: "block text-sm font-medium text-brand-text mb-2" 
+              className: "block text-sm font-medium mb-2",
+              style: { color: "#0A0A0A" }
             }, t.auth.fields.email),
             React.createElement("div", { className: "relative" },
               React.createElement("div", { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" },
-                React.createElement(Mail, { className: "h-5 w-5 text-brand-muted-text" })
+                React.createElement(Mail, { 
+                  className: "h-5 w-5",
+                  style: { color: "#6B7280" }
+                })
               ),
               React.createElement("input", {
                 id: "email",
@@ -114,11 +139,20 @@ const Login = ({ onSwitchToRegister, onSwitchToForgotPassword, translations }) =
                 required: true,
                 value: formData.email,
                 onChange: handleInputChange,
-                className: `block w-full pl-10 pr-3 py-3 border-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-primary-accent text-base ${
-                  validationErrors.email 
-                    ? 'border-brand-error focus:border-brand-error' 
-                    : 'border-gray-300 focus:border-brand-primary-accent'
-                }`,
+                className: "block w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none text-base transition-all",
+                style: {
+                  border: validationErrors.email 
+                    ? "2px solid #EF4444" 
+                    : "2px solid rgba(27,163,156,0.2)",
+                  ...(validationErrors.email 
+                    ? {} 
+                    : {
+                      ":focus": {
+                        borderColor: "#1BA39C",
+                        boxShadow: "0 0 0 4px rgba(27,163,156,0.12)"
+                      }
+                    })
+                },
                 placeholder: t.auth.placeholders.email
               })
             ),
@@ -181,11 +215,20 @@ const Login = ({ onSwitchToRegister, onSwitchToForgotPassword, translations }) =
           React.createElement("button", {
             type: "submit",
             disabled: isLoading,
-            className: `w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-white font-medium transition-all ${
-              isLoading 
-                ? 'bg-brand-primary-accent/50 cursor-not-allowed' 
-                : 'bg-brand-primary-accent hover:bg-brand-primary-accent/90 focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary-accent'
-            }`
+            className: "w-full flex justify-center items-center gap-2 py-3 px-4 border-transparent rounded-lg text-white font-medium transition-all",
+            style: {
+              background: isLoading 
+                ? "rgba(27,163,156,0.5)" 
+                : "linear-gradient(135deg, #1BA39C 0%, #5BC4A5 50%, #F2D45E 100%)",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              boxShadow: "0 8px 24px rgba(27,163,156,0.12)",
+              ...(isLoading ? {} : {
+                ":hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 20px 40px rgba(27,163,156,0.15)"
+                }
+              })
+            }
           },
             isLoading && React.createElement(Loader2, { className: "w-5 h-5 animate-spin" }),
             isLoading ? t.auth.login.signingIn : t.auth.login.signIn
