@@ -323,12 +323,7 @@ export const AuthProvider = ({ children }) => {
     retryMigration,
   };
 
-  // Set up API service context on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.apiService) {
-      window.apiService.setAuthContext(value);
-    }
-  }, [value]);
+  // API service no longer needs auth context - it gets tokens directly from localStorage
 
   return React.createElement(AuthContext.Provider, { value }, children);
 };

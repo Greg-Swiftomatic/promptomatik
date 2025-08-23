@@ -739,12 +739,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
 const App = () => {
   const [globalLanguage, setGlobalLanguage] = useState(DEFAULT_LANGUAGE);
   
-  // Make API service available globally for the auth context
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.apiService = apiService;
-    }
-  }, []);
+  // API service no longer needs to be globally available - it handles auth internally
 
   return React.createElement(AuthProvider, null,
     React.createElement(AuthWrapper, { 
