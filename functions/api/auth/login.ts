@@ -104,9 +104,15 @@ export const onRequestPost = async (context: any) => {
       
       console.log('User found:', { id: user.id, email: user.email, firstName: user.first_name });
       
-      // Verify password using secure bcrypt comparison
-      console.log('Verifying password with secure bcrypt...');
-      const isPasswordValid = await EdgeBcrypt.compare(data.password, user.password_hash);
+      // Hash input password using same method as registration (SHA-256)
+      console.log('Verifying password with SHA-256 hash...');
+      const encoder = new TextEncoder();
+      const passwordData = encoder.encode(data.password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', passwordData);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashedPassword = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      const isPasswordValid = hashedPassword === user.password_hash;
       
       if (!isPasswordValid) {
         console.log('Password verification failed for user:', user.email);

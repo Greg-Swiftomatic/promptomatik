@@ -31,7 +31,8 @@ export const AuthProvider = ({ children }) => {
     const initializeAuth = () => {
       try {
         const raw = localStorage.getItem(AUTH_KEY);
-        if (!raw) {
+        if (!raw || raw === 'undefined' || raw === 'null') {
+          localStorage.removeItem(AUTH_KEY);
           setIsLoading(false);
           return { user: null, token: null };
         }
