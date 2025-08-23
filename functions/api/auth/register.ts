@@ -4,13 +4,24 @@ export const onRequestPost = async (context: any) => {
   
   try {
     console.log('=== SIMPLE REGISTER ENDPOINT ===');
+    console.log('Environment keys available:', Object.keys(env));
+    console.log('JWT_SECRET exists:', !!env.JWT_SECRET);
+    console.log('JWT_SECRET type:', typeof env.JWT_SECRET);
+    console.log('JWT_SECRET length:', env.JWT_SECRET?.length || 0);
     
     // Basic environment check
     if (!env.JWT_SECRET) {
       console.log('Missing JWT_SECRET');
       return new Response(JSON.stringify({
         success: false,
-        error: { message: 'Missing JWT_SECRET' }
+        error: { 
+          message: 'Missing JWT_SECRET',
+          availableKeys: Object.keys(env),
+          debug: {
+            hasJWTSecret: !!env.JWT_SECRET,
+            jwtSecretType: typeof env.JWT_SECRET
+          }
+        }
       }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
     
