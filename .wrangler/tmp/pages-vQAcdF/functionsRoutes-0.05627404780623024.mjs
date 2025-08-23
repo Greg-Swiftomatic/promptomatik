@@ -5,6 +5,7 @@ import { onRequestPost as __api_auth_login_ts_onRequestPost } from "/Users/gregl
 import { onRequestPost as __api_auth_logout_ts_onRequestPost } from "/Users/gregld/Documents/GitHub/promptomatik/functions/api/auth/logout.ts"
 import { onRequestPost as __api_auth_refresh_ts_onRequestPost } from "/Users/gregld/Documents/GitHub/promptomatik/functions/api/auth/refresh.ts"
 import { onRequestPost as __api_auth_register_ts_onRequestPost } from "/Users/gregld/Documents/GitHub/promptomatik/functions/api/auth/register.ts"
+import { onRequestPost as __api_auth_register_complex_ts_onRequestPost } from "/Users/gregld/Documents/GitHub/promptomatik/functions/api/auth/register-complex.ts"
 import { onRequestPost as __api_auth_register_complex_backup_ts_onRequestPost } from "/Users/gregld/Documents/GitHub/promptomatik/functions/api/auth/register-complex-backup.ts"
 import { onRequestPost as __api_auth_reset_password_ts_onRequestPost } from "/Users/gregld/Documents/GitHub/promptomatik/functions/api/auth/reset-password.ts"
 import { onRequestGet as __api_debug_bindings_ts_onRequestGet } from "/Users/gregld/Documents/GitHub/promptomatik/functions/api/debug/bindings.ts"
@@ -67,6 +68,13 @@ export const routes = [
       method: "POST",
       middlewares: [],
       modules: [__api_auth_register_ts_onRequestPost],
+    },
+  {
+      routePath: "/api/auth/register-complex",
+      mountPath: "/api/auth",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_auth_register_complex_ts_onRequestPost],
     },
   {
       routePath: "/api/auth/register-complex-backup",

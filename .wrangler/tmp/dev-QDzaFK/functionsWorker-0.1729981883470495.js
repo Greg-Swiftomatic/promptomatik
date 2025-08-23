@@ -2576,6 +2576,85 @@ var onRequestPost5 = /* @__PURE__ */ __name2(async (context) => {
     });
   }
 }, "onRequestPost");
+var onRequestPost6 = /* @__PURE__ */ __name2(async (context) => {
+  const { request, env } = context;
+  try {
+    console.log("=== SIMPLE REGISTER ENDPOINT ===");
+    console.log("Environment keys available:", Object.keys(env));
+    console.log("JWT_SECRET exists:", !!env.JWT_SECRET);
+    console.log("JWT_SECRET type:", typeof env.JWT_SECRET);
+    console.log("JWT_SECRET length:", env.JWT_SECRET?.length || 0);
+    if (!env.JWT_SECRET) {
+      console.log("Missing JWT_SECRET");
+      return new Response(JSON.stringify({
+        success: false,
+        error: {
+          message: "Missing JWT_SECRET",
+          availableKeys: Object.keys(env),
+          debug: {
+            hasJWTSecret: !!env.JWT_SECRET,
+            jwtSecretType: typeof env.JWT_SECRET
+          }
+        }
+      }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+    if (!env.DB) {
+      console.log("Missing DB");
+      return new Response(JSON.stringify({
+        success: false,
+        error: { message: "Missing DB" }
+      }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+    try {
+      const testResult = await env.DB.prepare("SELECT 1 as test").first();
+      console.log("DB test result:", testResult);
+    } catch (dbError) {
+      console.error("DB connection error:", dbError);
+      return new Response(JSON.stringify({
+        success: false,
+        error: { message: "DB connection failed", details: dbError.message }
+      }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+    const data = await request.json();
+    console.log("Received data:", { firstName: data.firstName, email: data.email, hasPassword: !!data.password });
+    if (!data.firstName || !data.email || !data.password) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: { message: "Missing required fields" }
+      }), { status: 400, headers: { "Content-Type": "application/json" } });
+    }
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Registration endpoint is working!",
+      data: {
+        firstName: data.firstName,
+        email: data.email,
+        environmentCheck: {
+          hasJWT: !!env.JWT_SECRET,
+          hasDB: !!env.DB,
+          hasPromptCache: !!env.PROMPT_CACHE
+        }
+      }
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Simple registration error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return new Response(JSON.stringify({
+      success: false,
+      error: {
+        message: "Simple registration failed",
+        details: errorMessage,
+        stack: error instanceof Error ? error.stack : "No stack"
+      }
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}, "onRequestPost");
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
@@ -2606,7 +2685,7 @@ async function createJWT3(payload, secret) {
 }
 __name(createJWT3, "createJWT3");
 __name2(createJWT3, "createJWT");
-var onRequestPost6 = /* @__PURE__ */ __name2(async (context) => {
+var onRequestPost7 = /* @__PURE__ */ __name2(async (context) => {
   const { request, env } = context;
   try {
     console.log("=== SECURE REGISTER ENDPOINT ===");
@@ -2723,11 +2802,17 @@ var onRequestPost6 = /* @__PURE__ */ __name2(async (context) => {
     }
   } catch (error) {
     console.error("Registration error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : "No stack trace";
+    console.error("Error message:", errorMessage);
+    console.error("Error stack:", errorStack);
     const errorResponse = new Response(JSON.stringify({
       success: false,
       error: {
         code: "INTERNAL_ERROR",
-        message: "Registration failed. Please try again."
+        message: "Registration failed. Please try again.",
+        details: errorMessage
+        // Add error details for debugging
       }
     }), {
       status: 500,
@@ -2811,7 +2896,7 @@ var RegisterDatabase = class {
     ).run();
   }
 };
-var onRequestPost7 = /* @__PURE__ */ __name2(async (context) => {
+var onRequestPost8 = /* @__PURE__ */ __name2(async (context) => {
   const { request, env } = context;
   console.log("=== REGISTER DEBUG START ===");
   console.log("Request method:", request.method);
@@ -2990,7 +3075,7 @@ async function createJWT4(payload, secret) {
 }
 __name(createJWT4, "createJWT4");
 __name2(createJWT4, "createJWT");
-var onRequestPost8 = /* @__PURE__ */ __name2(async (context) => {
+var onRequestPost9 = /* @__PURE__ */ __name2(async (context) => {
   const { request, env } = context;
   try {
     console.log("=== RESET PASSWORD ENDPOINT ===");
@@ -3245,7 +3330,7 @@ var onRequestGet = /* @__PURE__ */ __name2(async (context) => {
     });
   }
 }, "onRequestGet");
-var onRequestPost9 = /* @__PURE__ */ __name2(async (context) => {
+var onRequestPost10 = /* @__PURE__ */ __name2(async (context) => {
   const { request, env } = context;
   try {
     const jwtAvailable = !!(env.JWT_SECRET && env.JWT_SECRET.trim());
@@ -21476,7 +21561,7 @@ ${tMeta.agenticFooter}
 }
 __name(buildPromptQuery, "buildPromptQuery");
 __name2(buildPromptQuery, "buildPromptQuery");
-var onRequestPost10 = /* @__PURE__ */ __name2(async (context) => {
+var onRequestPost11 = /* @__PURE__ */ __name2(async (context) => {
   const { request, env } = context;
   try {
     console.log("=== GENERATE PROMPT ENDPOINT ===");
@@ -21735,7 +21820,7 @@ var onRequestGet3 = /* @__PURE__ */ __name2(async (context) => {
     return SecurityHeadersManager.addSecurityHeaders(errorResponse);
   }
 }, "onRequestGet");
-var onRequestPost11 = /* @__PURE__ */ __name2(async (context) => {
+var onRequestPost12 = /* @__PURE__ */ __name2(async (context) => {
   const { request, env } = context;
   try {
     console.log("=== CREATE PROMPT ENDPOINT ===");
@@ -21811,18 +21896,25 @@ var routes = [
     modules: [onRequestPost6]
   },
   {
-    routePath: "/api/auth/register-complex-backup",
+    routePath: "/api/auth/register-complex",
     mountPath: "/api/auth",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost7]
   },
   {
-    routePath: "/api/auth/reset-password",
+    routePath: "/api/auth/register-complex-backup",
     mountPath: "/api/auth",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost8]
+  },
+  {
+    routePath: "/api/auth/reset-password",
+    mountPath: "/api/auth",
+    method: "POST",
+    middlewares: [],
+    modules: [onRequestPost9]
   },
   {
     routePath: "/api/debug/bindings",
@@ -21836,7 +21928,7 @@ var routes = [
     mountPath: "/api/debug",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost9]
+    modules: [onRequestPost10]
   },
   {
     routePath: "/api/prompts/stats",
@@ -21878,7 +21970,7 @@ var routes = [
     mountPath: "/api",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost10]
+    modules: [onRequestPost11]
   },
   {
     routePath: "/api/prompts",
@@ -21892,7 +21984,7 @@ var routes = [
     mountPath: "/api",
     method: "POST",
     middlewares: [],
-    modules: [onRequestPost11]
+    modules: [onRequestPost12]
   }
 ];
 function lexer(str) {
