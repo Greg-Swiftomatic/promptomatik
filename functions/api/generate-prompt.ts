@@ -608,6 +608,9 @@ export const onRequestPost = async (context: any) => {
   
   try {
     console.log('=== GENERATE PROMPT ENDPOINT ===');
+    console.log('Environment keys:', Object.keys(env));
+    console.log('API_KEY exists:', !!env.API_KEY);
+    console.log('GEMINI_API_KEY exists:', !!env.GEMINI_API_KEY);
     
     // Basic environment check
     if (!env.JWT_SECRET) {
