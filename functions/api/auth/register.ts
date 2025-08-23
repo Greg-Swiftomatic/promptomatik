@@ -9,8 +9,13 @@ export const onRequestPost = async (context: any) => {
     console.log('JWT_SECRET type:', typeof env.JWT_SECRET);
     console.log('JWT_SECRET length:', env.JWT_SECRET?.length || 0);
     
+    // Handle JWT_SECRET with potential trailing space
+    const jwtSecret = env.JWT_SECRET || env['JWT_SECRET '];
+    console.log('JWT with space exists:', !!env['JWT_SECRET ']);
+    console.log('Final JWT exists:', !!jwtSecret);
+    
     // Basic environment check
-    if (!env.JWT_SECRET) {
+    if (!jwtSecret) {
       console.log('Missing JWT_SECRET');
       return new Response(JSON.stringify({
         success: false,
@@ -63,7 +68,7 @@ export const onRequestPost = async (context: any) => {
         firstName: data.firstName,
         email: data.email,
         environmentCheck: {
-          hasJWT: !!env.JWT_SECRET,
+          hasJWT: !!jwtSecret,
           hasDB: !!env.DB,
           hasPromptCache: !!env.PROMPT_CACHE
         }
