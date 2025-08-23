@@ -257,12 +257,51 @@
             border-radius: 20px;
             padding: 32px;
             box-shadow: var(--shadow-xl);
-            border: 1px solid rgba(58, 155, 158, 0.1);
-            position: relative;
-            overflow: hidden;
+            animation: fadeInUp 0.8s var(--ease-smooth) 0.8s both;
+            border: 1px solid rgba(133, 162, 163, 0.1);
+            transition: transform 0.3s var(--ease-smooth);
+            overflow: visible; /* au lieu de hidden pour éviter le clipping */
+        }
+
+        .hero-demo:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px rgba(44, 61, 87, 0.15);
+        }
+
+        .hero-demo-inner {
+            overflow: hidden; /* conserve les coins arrondis sans couper l'animation */
+            border-radius: 16px; /* légèrement plus petit que le parent */
         }
 
         .demo-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .demo-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--brand-text);
+            margin-bottom: 8px;
+        }
+
+        .demo-subtitle {
+            font-size: 14px;
+            color: var(--brand-accent);
+        }
+
+        .demo-before,
+        .demo-after {
+            margin-bottom: 20px;
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        .demo-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -1113,32 +1152,32 @@
                 </div>
             </div>
             
-            <div class="hero-demo" id="demo">
-                <div class="demo-header">
-                    <div class="demo-dot"></div>
-                    <div class="demo-dot"></div>
-                    <div class="demo-dot"></div>
-                    <div class="demo-title">Promptomatik Live</div>
-                </div>
-                
-                <div class="demo-animation">
-                    <div class="demo-input">
-                        <div class="demo-input-label">💭 Votre idée</div>
-                        <div class="demo-input-text">"Crée une stratégie marketing pour mon produit SaaS"</div>
+            <div class="hero-demo">
+                <div class="hero-demo-inner">
+                    <div class="demo-header">
+                        <div class="demo-title" data-translate="demo.title">Transformation automatique</div>
+                        <div class="demo-subtitle" data-translate="demo.subtitle">De l'idée au prompt professionnel</div>
                     </div>
                     
-                    <div class="demo-arrow">⚡</div>
+                    <div class="demo-before">
+                        <div class="demo-label">
+                            <span>❌</span>
+                            <span data-translate="demo.before">Demande imprécise</span>
+                        </div>
+                        <div class="demo-text" data-translate="demo.beforeExample">"Crée-moi un exercice"</div>
+                    </div>
                     
-                    <div class="demo-output">
-                        <div class="demo-output-label">✨ Prompt optimisé</div>
-                        <div class="demo-output-text">
-                            <strong>Rôle:</strong> Tu es un expert en growth marketing SaaS avec 10 ans d'expérience...<br><br>
-                            <strong>Contexte:</strong> Je lance un nouveau produit SaaS [décrire le produit]...<br><br>
-                            <strong>Objectif:</strong> Créer une stratégie marketing complète incluant...<br><br>
-                            <strong>Livrables attendus:</strong> 
-                            1. Analyse du marché cible
-                            2. Plan d'acquisition sur 6 mois
-                            3. KPIs à suivre...
+                    <div class="demo-arrow">↓</div>
+                    
+                    <div class="demo-after">
+                        <div class="demo-label">
+                            <span>✅</span>
+                            <span data-translate="demo.after">Prompt structuré</span>
+                        </div>
+                        <div class="demo-text" data-translate="demo.afterExample">
+                            <strong>Contexte:</strong> Tu es un expert en création d'exercices pédagogiques...<br>
+                            <strong>Objectif:</strong> Concevoir un QCM de 10 questions niveau B2...<br>
+                            <strong>Format:</strong> Questions + 4 options + justifications...
                         </div>
                     </div>
                 </div>
@@ -1676,22 +1715,40 @@
             });
         });
 
-        // Demo animation
-        function animateDemo() {
-            const demoOutput = document.querySelector('.demo-output');
-            if (demoOutput) {
-                setInterval(() => {
-                    demoOutput.style.transform = 'scale(1.02)';
-                    setTimeout(() => {
-                        demoOutput.style.transform = 'scale(1)';
-                    }, 500);
-                }, 3000);
-            }
+        // Enhanced demo interaction
+        let demoToggle = false;
+        let demoInterval;
+
+        function startDemoAnimation() {
+            demoInterval = setInterval(() => {
+                const demoAfter = document.querySelector('.demo-after');
+                const demoBefore = document.querySelector('.demo-before');
+                
+                if (demoAfter && demoBefore) {
+                    demoToggle = !demoToggle;
+                    
+                    if (demoToggle) {
+                        // Utilise box-shadow au lieu de scale pour éviter le clipping
+                        demoAfter.style.boxShadow = '0 0 0 8px rgba(133, 162, 163, 0.08)';
+                        demoAfter.style.background = 'linear-gradient(135deg, #e8f4f4 0%, #f0f8f8 100%)';
+                        demoBefore.style.boxShadow = '';
+                        demoBefore.style.opacity = '0.7';
+                    } else {
+                        demoAfter.style.boxShadow = '';
+                        demoAfter.style.background = 'linear-gradient(135deg, #f0f5f5 0%, #f8fafa 100%)';
+                        demoBefore.style.boxShadow = '0 0 0 4px rgba(231, 76, 60, 0.05)';
+                        demoBefore.style.opacity = '1';
+                    }
+                    
+                    demoAfter.style.transition = 'all 0.5s var(--ease-smooth)';
+                    demoBefore.style.transition = 'all 0.5s var(--ease-smooth)';
+                }
+            }, 3000);
         }
 
         // Initialize animations
         window.addEventListener('load', () => {
-            animateDemo();
+            startDemoAnimation();
         });
 
         // Add scroll reveal animation
