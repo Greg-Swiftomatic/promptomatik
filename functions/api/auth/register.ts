@@ -154,9 +154,9 @@ export const onRequestPost = async (context: any) => {
     console.log('Inserting user into database...');
     try {
       await env.DB.prepare(`
-        INSERT INTO users (id, email, password_hash, email_verified, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).bind(userId, data.email, hashedPassword, false, now, now).run();
+        INSERT INTO users (id, first_name, email, password_hash, email_verified, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).bind(userId, data.firstName, data.email, hashedPassword, false, now, now).run();
       console.log('User inserted successfully');
     } catch (dbError) {
       console.error('Database insert error:', dbError);
@@ -166,7 +166,7 @@ export const onRequestPost = async (context: any) => {
     // Create JWT
     console.log('Creating JWT token...');
     try {
-      const token = await createJWT({ userId, email: data.email }, env.JWT_SECRET);
+      const token = await createJWT({ userId, firstName: data.firstName, email: data.email }, env.JWT_SECRET);
       console.log('JWT created successfully');
       
       console.log('User created successfully:', userId);
@@ -176,6 +176,7 @@ export const onRequestPost = async (context: any) => {
         token,
         user: {
           id: userId,
+          firstName: data.firstName,
           email: data.email,
           emailVerified: false
         }
