@@ -1,15 +1,22 @@
 // API service layer for handling all backend communications
-// Uses the authentication context for JWT token management
+// Uses localStorage for JWT token management
 
 class ApiService {
   constructor() {
-    this.baseURL = '';
-    this.authContext = null;
+    this.baseURL = import.meta.env?.VITE_API_BASE ?? '';
   }
 
-  // Set auth context reference (will be called from AuthProvider)
-  setAuthContext(authContext) {
-    this.authContext = authContext;
+  // Get token from localStorage
+  getToken() {
+    try {
+      const raw = localStorage.getItem("auth");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+      return parsed.token || null;
+    } catch {
+      return null;
+    }
   }
 
   // Get default headers with authentication
@@ -19,8 +26,9 @@ class ApiService {
       ...additionalHeaders,
     };
 
-    if (this.authContext && this.authContext.token) {
-      baseHeaders['Authorization'] = `Bearer ${this.authContext.token}`;
+    const token = this.getToken();
+    if (token) {
+      baseHeaders['Authorization'] = `Bearer ${token}`;
     }
 
     return baseHeaders;
@@ -30,35 +38,20 @@ class ApiService {
   async makeRequest(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     const requestOptions = {
-      ...options,
+      method: options.method || 'GET',
       headers: this.getHeaders(options.headers),
+      ...(options.body ? { body: typeof options.body === 'string' ? options.body : JSON.stringify(options.body) } : {})
     };
 
     try {
       let response = await fetch(url, requestOptions);
 
-      // Handle token expiration
-      if (response.status === 401 && this.authContext && this.authContext.token) {
-        // Try to refresh token
-        const refreshed = await this.authContext.refreshToken();
-        
-        if (refreshed) {
-          // Retry the request with new token
-          requestOptions.headers = this.getHeaders(options.headers);
-          response = await fetch(url, requestOptions);
-        } else {
-          // Refresh failed, redirect to login
-          throw new Error('Authentication expired');
-        }
-      }
-
-      const data = await response.json().catch(() => ({}));
-
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+        const text = await response.text().catch(() => "");
+        throw new Error(JSON.stringify({ status: response.status, body: text }));
       }
 
-      return data;
+      return response.json().catch(() => ({}));
     } catch (error) {
       console.error(`API Error [${endpoint}]:`, error);
       throw error;
@@ -73,10 +66,10 @@ class ApiService {
     });
   }
 
-  async register(email, password) {
+  async register(firstName, email, password) {
     return this.makeRequest('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: { firstName, email, password },
     });
   }
 

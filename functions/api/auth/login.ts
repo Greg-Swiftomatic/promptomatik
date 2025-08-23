@@ -9,16 +9,17 @@ interface LoginRequest {
 
 // Remove insecure password hashing - using secure EdgeBcrypt.compare instead
 
-// Simple JWT creation (same as register)
-async function createJWT(payload: any, secret: string): Promise<string> {
-  const header = { alg: 'HS256', typ: 'JWT' };
-  const now = Math.floor(Date.now() / 1000);
-  const jwtPayload = { ...payload, iat: now, exp: now + 3600 }; // 1 hour
-  
+// Generate JWT token (same method as register endpoint for consistency)
+async function generateJWT(payload: any, secret: string): Promise<string> {
+  const header = {
+    alg: 'HS256',
+    typ: 'JWT'
+  };
+
   const encoder = new TextEncoder();
-  const headerB64 = btoa(JSON.stringify(header)).replace(/[+/=]/g, m => ({'+':'-','/':'_','=':''})[m]);
-  const payloadB64 = btoa(JSON.stringify(jwtPayload)).replace(/[+/=]/g, m => ({'+':'-','/':'_','=':''})[m]);
-  
+  const headerB64 = btoa(JSON.stringify(header)).replace(/[+/]/g, c => c === '+' ? '-' : '_').replace(/=/g, '');
+  const payloadB64 = btoa(JSON.stringify(payload)).replace(/[+/]/g, c => c === '+' ? '-' : '_').replace(/=/g, '');
+
   const message = `${headerB64}.${payloadB64}`;
   const key = await crypto.subtle.importKey(
     'raw',
@@ -27,10 +28,12 @@ async function createJWT(payload: any, secret: string): Promise<string> {
     false,
     ['sign']
   );
-  
+
   const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
-  const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature))).replace(/[+/=]/g, m => ({'+':'-','/':'_','=':''})[m]);
-  
+  const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/[+/]/g, c => c === '+' ? '-' : '_')
+    .replace(/=/g, '');
+
   return `${message}.${signatureB64}`;
 }
 
@@ -112,9 +115,17 @@ export const onRequestPost = async (context: any) => {
       
       console.log('Password verified successfully');
     
-      // Create JWT token
+      // Generate JWT token with consistent expiration (24 hours like register)
       console.log('Creating JWT token...');
-      const token = await createJWT({ userId: user.id, firstName: user.first_name, email: user.email }, env.JWT_SECRET);
+      const tokenPayload = {
+        userId: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+      };
+      
+      const token = await generateJWT(tokenPayload, env.JWT_SECRET);
       console.log('JWT created successfully');
       
       console.log('Login successful for:', user.email);

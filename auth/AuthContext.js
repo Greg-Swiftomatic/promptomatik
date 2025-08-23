@@ -11,8 +11,7 @@ export const useAuth = () => {
   return context;
 };
 
-const TOKEN_KEY = 'promptomatik-auth-token';
-const USER_KEY = 'promptomatik-user';
+const AUTH_KEY = 'auth';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -29,33 +28,46 @@ export const AuthProvider = ({ children }) => {
 
   // Initialize auth state from localStorage
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       try {
-        const storedToken = localStorage.getItem(TOKEN_KEY);
-        const storedUser = localStorage.getItem(USER_KEY);
-
+        const raw = localStorage.getItem(AUTH_KEY);
+        if (!raw) {
+          setIsLoading(false);
+          return { user: null, token: null };
+        }
+        
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") {
+          localStorage.removeItem(AUTH_KEY);
+          setIsLoading(false);
+          return { user: null, token: null };
+        }
+        
+        const { user: storedUser, token: storedToken } = parsed;
+        
         if (storedToken && storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          
           // Verify token is still valid by checking expiration
-          const tokenPayload = JSON.parse(atob(storedToken.split('.')[1]));
-          const isExpired = tokenPayload.exp * 1000 < Date.now();
-          
-          if (!isExpired) {
-            setToken(storedToken);
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-          } else {
-            // Token expired, clear storage
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem(USER_KEY);
+          try {
+            const tokenPayload = JSON.parse(atob(storedToken.split('.')[1]));
+            const isExpired = tokenPayload.exp * 1000 < Date.now();
+            
+            if (!isExpired) {
+              setToken(storedToken);
+              setUser(storedUser);
+              setIsAuthenticated(true);
+            } else {
+              // Token expired, clear storage
+              localStorage.removeItem(AUTH_KEY);
+            }
+          } catch (tokenError) {
+            console.warn('Invalid token format, clearing storage');
+            localStorage.removeItem(AUTH_KEY);
           }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        // Clear invalid data
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
+        // Clear invalid data on any JSON parsing error
+        localStorage.removeItem(AUTH_KEY);
       } finally {
         setIsLoading(false);
       }
@@ -82,8 +94,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Store token and user data
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      localStorage.setItem(AUTH_KEY, JSON.stringify({
+        token: data.token,
+        user: data.user
+      }));
       
       setToken(data.token);
       setUser(data.user);
@@ -128,8 +142,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Store token and user data
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      localStorage.setItem(AUTH_KEY, JSON.stringify({
+        token: data.token,
+        user: data.user
+      }));
       
       setToken(data.token);
       setUser(data.user);
@@ -164,8 +180,7 @@ export const AuthProvider = ({ children }) => {
       // Continue with local logout even if API call fails
     } finally {
       // Clear local state and storage
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(AUTH_KEY);
       setToken(null);
       setUser(null);
       setIsAuthenticated(false);
@@ -190,7 +205,11 @@ export const AuthProvider = ({ children }) => {
 
       const data = await response.json();
       
-      localStorage.setItem(TOKEN_KEY, data.token);
+      const currentAuth = JSON.parse(localStorage.getItem(AUTH_KEY) || '{}');
+      localStorage.setItem(AUTH_KEY, JSON.stringify({
+        ...currentAuth,
+        token: data.token
+      }));
       setToken(data.token);
       
       return true;

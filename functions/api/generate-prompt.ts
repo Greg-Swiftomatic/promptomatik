@@ -768,26 +768,41 @@ export const onRequestPost = async (context: any) => {
       code: 'INTERNAL_ERROR',
       message: 'Unable to generate prompt'
     };
+    let statusCode = 500;
 
     if (error?.message) {
-      if (error.message.includes('API key not valid') || error.message.includes('API_KEY_INVALID')) {
+      const errorMsg = error.message.toLowerCase();
+      
+      if (errorMsg.includes('api key not valid') || errorMsg.includes('api_key_invalid') || errorMsg.includes('invalid api key')) {
         errorData = {
           code: 'API_KEY_ERROR',
-          message: 'Service configuration error'
+          message: 'Server missing GEMINI_API_KEY'
         };
-      } else if (error.message.toLowerCase().includes('quota')) {
+        statusCode = 500;
+      } else if (errorMsg.includes('quota') || errorMsg.includes('rate limit')) {
         errorData = {
           code: 'QUOTA_EXCEEDED',
           message: 'Service temporarily unavailable due to high demand'
         };
+        statusCode = 502;
+      } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+        errorData = {
+          code: 'NETWORK_ERROR',
+          message: 'Network error connecting to AI service'
+        };
+        statusCode = 502;
       }
     }
+    
+    // Log additional debug info
+    console.log('GEMINI_API_KEY exists:', !!env.GEMINI_API_KEY);
+    console.log('API_KEY exists:', !!env.API_KEY);
     
     const errorResponse = new Response(JSON.stringify({
       success: false,
       error: errorData
     }), {
-      status: 500,
+      status: statusCode,
       headers: { 'Content-Type': 'application/json' }
     });
     
