@@ -6,7 +6,7 @@ interface EventContext {
   request: Request;
   env: {
     DB: any;
-    RATE_LIMITER: any;
+    PROMPT_CACHE: any;
     JWT_SECRET: string;
     [key: string]: any;
   };
@@ -32,10 +32,10 @@ export const onRequestPost: (context: EventContext) => Promise<Response> = async
     // Test KV
     let kvTest = null;
     try {
-      await env.RATE_LIMITER.put('test-key', 'test-value', { expirationTtl: 60 });
-      const value = await env.RATE_LIMITER.get('test-key');
+      await env.PROMPT_CACHE.put('test-key', 'test-value', { expirationTtl: 60 });
+      const value = await env.PROMPT_CACHE.get('test-key');
       kvTest = { success: true, canWrite: true, canRead: value === 'test-value' };
-      await env.RATE_LIMITER.delete('test-key');
+      await env.PROMPT_CACHE.delete('test-key');
     } catch (error) {
       kvTest = { success: false, error: error.message };
     }

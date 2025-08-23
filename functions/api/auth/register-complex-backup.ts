@@ -40,7 +40,7 @@ interface EventContext {
   request: Request;
   env: {
     DB: D1Database;
-    RATE_LIMITER: KVNamespace; // Primary KV binding name matching namespace title
+    PROMPT_CACHE: KVNamespace; // Primary KV binding name matching namespace title
     JWT_SECRET: string;
     ENVIRONMENT?: string;
     [key: string]: any; // Allow for dynamic binding discovery
@@ -158,8 +158,8 @@ export const onRequestPost: (context: EventContext) => Promise<Response> = async
   try {
     const db = new RegisterDatabase(env.DB);
     
-    // Initialize security middleware with RATE_LIMITER KV binding
-    const security = new SecurityMiddleware(env.RATE_LIMITER, env.JWT_SECRET);
+    // Initialize security middleware with PROMPT_CACHE KV binding
+    const security = new SecurityMiddleware(env.PROMPT_CACHE, env.JWT_SECRET);
     
     // Apply comprehensive security checks with strict rate limiting for registration
     const securityResult = await security.applySecurityChecks(request, {

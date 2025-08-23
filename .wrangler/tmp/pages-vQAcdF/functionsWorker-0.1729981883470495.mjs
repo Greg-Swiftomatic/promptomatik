@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-HdBL9B/checked-fetch.js
+// ../.wrangler/tmp/bundle-C2YR4v/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2176,7 +2176,7 @@ var onRequestPost2 = /* @__PURE__ */ __name(async (context) => {
       return AuthUtils2.createErrorResponse(AUTH_ERRORS.INTERNAL_ERROR);
     }
     console.log("Applying security checks and rate limiting...");
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     const securityCheck = await security.applySecurityChecks(request, {
       rateLimitConfig: RATE_LIMIT_CONFIGS2.LOGIN,
       // Reuse login rate limit
@@ -2253,7 +2253,7 @@ var onRequestPost2 = /* @__PURE__ */ __name(async (context) => {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     return security.wrapResponse(errorResponse, request);
   }
 }, "onRequestPost");
@@ -2287,7 +2287,7 @@ var onRequestPost3 = /* @__PURE__ */ __name(async (context) => {
       return AuthUtils2.createErrorResponse(AUTH_ERRORS.INTERNAL_ERROR);
     }
     console.log("Applying security checks and rate limiting...");
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     const securityCheck = await security.applySecurityChecks(request, {
       rateLimitConfig: RATE_LIMIT_CONFIGS2.LOGIN,
       allowedMethods: ["POST"],
@@ -2368,7 +2368,7 @@ var onRequestPost3 = /* @__PURE__ */ __name(async (context) => {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     return security.wrapResponse(errorResponse, request);
   }
 }, "onRequestPost");
@@ -2546,7 +2546,7 @@ var onRequestPost6 = /* @__PURE__ */ __name(async (context) => {
       return AuthUtils2.createErrorResponse(AUTH_ERRORS.INTERNAL_ERROR);
     }
     console.log("Applying security checks and rate limiting...");
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     const securityCheck = await security.applySecurityChecks(request, {
       rateLimitConfig: RATE_LIMIT_CONFIGS2.REGISTER,
       allowedMethods: ["POST"],
@@ -2664,7 +2664,7 @@ var onRequestPost6 = /* @__PURE__ */ __name(async (context) => {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     return security.wrapResponse(errorResponse, request);
   }
 }, "onRequestPost");
@@ -2762,7 +2762,7 @@ var onRequestPost7 = /* @__PURE__ */ __name(async (context) => {
   }
   try {
     const db = new RegisterDatabase(env.DB);
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     const securityResult = await security.applySecurityChecks(request, {
       rateLimitConfig: RATE_LIMIT_CONFIGS2.REGISTER,
       requireAuth: false,
@@ -2929,7 +2929,7 @@ var onRequestPost8 = /* @__PURE__ */ __name(async (context) => {
       return AuthUtils2.createErrorResponse(AUTH_ERRORS.INTERNAL_ERROR);
     }
     console.log("Applying security checks and rate limiting...");
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     const securityCheck = await security.applySecurityChecks(request, {
       rateLimitConfig: RATE_LIMIT_CONFIGS2.LOGIN,
       // Reuse login rate limit
@@ -3060,7 +3060,7 @@ var onRequestPost8 = /* @__PURE__ */ __name(async (context) => {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });
-    const security = new SecurityMiddleware2(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware2(env.PROMPT_CACHE, env.JWT_SECRET);
     return security.wrapResponse(errorResponse, request);
   }
 }, "onRequestPost");
@@ -3134,10 +3134,10 @@ var onRequestGet = /* @__PURE__ */ __name(async (context) => {
         actual: env.DB?.constructor?.name || typeof env.DB,
         available: !!env.DB
       },
-      RATE_LIMITER: {
+      PROMPT_CACHE: {
         expected: "KvNamespace",
-        actual: env.RATE_LIMITER?.constructor?.name || typeof env.RATE_LIMITER,
-        available: !!env.RATE_LIMITER
+        actual: env.PROMPT_CACHE?.constructor?.name || typeof env.PROMPT_CACHE,
+        available: !!env.PROMPT_CACHE
       },
       KV: {
         expected: "KvNamespace (fallback)",
@@ -3157,7 +3157,7 @@ var onRequestGet = /* @__PURE__ */ __name(async (context) => {
     if (!env.DB) {
       response.recommendations.push("DB binding is missing - check wrangler.toml D1 configuration");
     }
-    if (!env.RATE_LIMITER && !env.KV) {
+    if (!env.PROMPT_CACHE && !env.KV) {
       response.recommendations.push("KV namespace binding is missing - check wrangler.toml KV configuration");
     }
     return new Response(JSON.stringify(response, null, 2), {
@@ -3194,10 +3194,10 @@ var onRequestPost9 = /* @__PURE__ */ __name(async (context) => {
     }
     let kvTest = null;
     try {
-      await env.RATE_LIMITER.put("test-key", "test-value", { expirationTtl: 60 });
-      const value = await env.RATE_LIMITER.get("test-key");
+      await env.PROMPT_CACHE.put("test-key", "test-value", { expirationTtl: 60 });
+      const value = await env.PROMPT_CACHE.get("test-key");
       kvTest = { success: true, canWrite: true, canRead: value === "test-value" };
-      await env.RATE_LIMITER.delete("test-key");
+      await env.PROMPT_CACHE.delete("test-key");
     } catch (error) {
       kvTest = { success: false, error: error.message };
     }
@@ -21648,7 +21648,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-HdBL9B/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-C2YR4v/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -21680,7 +21680,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-HdBL9B/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-C2YR4v/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

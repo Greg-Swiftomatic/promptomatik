@@ -12,10 +12,10 @@ binding = "DB" # This will be available as env.DB in your Workers
 database_name = "promptomatik-db"
 database_id = "285697b5-a4c3-4fc4-876b-738d04661286"
 
-# KV Namespace for rate limiting and session management
+# KV Namespace for prompt caching and rate limiting
 [[kv_namespaces]]
-binding = "RATE_LIMITER"  # Match the actual namespace title from dashboard
-id = "341d4109a4044a3a88cb3ccea2797278"
+binding = "PROMPT_CACHE"  # Match what the code expects: env.PROMPT_CACHE
+id = "94f4bb7d0c9b4a92a622d428a5775149"
 
 # Environment variables (set these via wrangler secret put)
 [vars]

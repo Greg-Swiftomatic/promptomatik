@@ -58,7 +58,7 @@ export const onRequestPost = async (context: any) => {
     
     // Apply rate limiting and security checks
     console.log('Applying security checks and rate limiting...');
-    const security = new SecurityMiddleware(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware(env.PROMPT_CACHE, env.JWT_SECRET);
     const securityCheck = await security.applySecurityChecks(request, {
       rateLimitConfig: RATE_LIMIT_CONFIGS.REGISTER,
       allowedMethods: ['POST'],
@@ -208,7 +208,7 @@ export const onRequestPost = async (context: any) => {
     });
     
     // Apply security headers even to error responses
-    const security = new SecurityMiddleware(env.RATE_LIMITER, env.JWT_SECRET);
+    const security = new SecurityMiddleware(env.PROMPT_CACHE, env.JWT_SECRET);
     return security.wrapResponse(errorResponse, request);
   }
 };

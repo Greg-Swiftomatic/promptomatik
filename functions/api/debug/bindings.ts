@@ -95,10 +95,10 @@ export const onRequestGet: (context: EventContext) => Promise<Response> = async 
         actual: env.DB?.constructor?.name || typeof env.DB,
         available: !!env.DB
       },
-      RATE_LIMITER: {
+      PROMPT_CACHE: {
         expected: 'KvNamespace',
-        actual: env.RATE_LIMITER?.constructor?.name || typeof env.RATE_LIMITER,
-        available: !!env.RATE_LIMITER
+        actual: env.PROMPT_CACHE?.constructor?.name || typeof env.PROMPT_CACHE,
+        available: !!env.PROMPT_CACHE
       },
       KV: {
         expected: 'KvNamespace (fallback)',
@@ -121,7 +121,7 @@ export const onRequestGet: (context: EventContext) => Promise<Response> = async 
     if (!env.DB) {
       response.recommendations.push('DB binding is missing - check wrangler.toml D1 configuration');
     }
-    if (!env.RATE_LIMITER && !env.KV) {
+    if (!env.PROMPT_CACHE && !env.KV) {
       response.recommendations.push('KV namespace binding is missing - check wrangler.toml KV configuration');
     }
 
