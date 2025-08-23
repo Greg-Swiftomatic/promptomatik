@@ -1,7 +1,7 @@
 
-# Teachinspire Prompt Builder
+# Promptomatik Prompt Builder
 
-The Teachinspire Prompt Builder is a web application designed to help users, particularly educators and instructional designers, transform their ideas into structured and effective prompts for AI models like Google's Gemini. It guides users through a process of defining their request, selecting an approach (MVP or Agentic), refining variables, and then generates a tailored prompt.
+The Promptomatik Prompt Builder is a web application designed to help users, particularly educators and instructional designers, transform their ideas into structured and effective prompts for AI models like Google's Gemini. It guides users through a process of defining their request, selecting an approach (MVP or Agentic), refining variables, and then generates a tailored prompt.
 
 The application emphasizes the "meta" approach taught in Teachinspire lessons, where AI is used to help construct prompts for AI. It uses a Cloudflare Worker to securely handle API calls to the Google Gemini API.
 
