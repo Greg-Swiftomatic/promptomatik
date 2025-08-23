@@ -1,0 +1,37 @@
+# Promptomatik - Cloudflare Pages Configuration
+name = "promptomatik"
+compatibility_date = "2024-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+# Pages configuration
+pages_build_output_dir = "./"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB" # This will be available as env.DB in your Workers
+database_name = "promptomatik-db"
+database_id = "285697b5-a4c3-4fc4-876b-738d04661286"
+
+# KV Namespace for rate limiting and session management
+[[kv_namespaces]]
+binding = "RATE_LIMITER"  # Match the actual namespace title from dashboard
+id = "341d4109a4044a3a88cb3ccea2797278"
+
+# Environment variables (set these via wrangler secret put)
+[vars]
+ENVIRONMENT = "production" # Change to "development" for local testing
+ALLOWED_ORIGINS = "https://yourdomain.com,https://www.yourdomain.com" # Update with your actual domains
+
+# Secrets (set via wrangler secret put)
+# Run these commands to set your secrets:
+# wrangler secret put JWT_SECRET
+# wrangler secret put API_KEY
+# wrangler secret put RESEND_API_KEY
+
+# Development database (optional - for local development)
+# Uncomment and configure for local testing
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "teachinspire-prompt-builder-dev"
+# database_id = ""
+# preview_database_id = ""

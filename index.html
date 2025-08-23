@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promptomatik - Générateur de prompts IA structurés</title>
+    <link rel="icon" type="image/png" href="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/134736d6-5e59-461d-8594-dbd8c8d6c400/public">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-bg': '#f8f7f2',
+                        'brand-text': '#2c3d57',
+                        'brand-primary-accent': '#85a2a3',
+                        'brand-secondary-accent': '#f1d263',
+                        'brand-card-bg': '#ffffff',
+                        'brand-muted-text': '#6b7280',
+                        'brand-error': '#ef4444',
+                        'brand-success': '#10b981',
+                        'brand-info': '#3b82f6',
+                    },
+                    fontFamily: {
+                        'playfair': ['Playfair Display', 'serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                        'courier': ['Courier New', 'Courier', 'monospace'],
+                    },
+                    boxShadow: {
+                        'brand': '0 4px 6px -1px rgba(44, 61, 87,0.07), 0 2px 4px -2px rgba(44, 61, 87,0.07)',
+                        'brand-lg': '0 10px 15px -3px rgba(44, 61, 87, 0.1), 0 4px 6px -2px rgba(44, 61, 87, 0.05)'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        :root {
+            --brand-bg: #f8f7f2;
+            --brand-text: #2c3d57;
+            --brand-accent: #85a2a3;
+            --brand-gold: #f1d263;
+            --brand-white: #ffffff;
+            --brand-gold-light: #f5d563;
+            --brand-accent-light: #a8c5c6;
+            --brand-text-light: #405371;
+            
+            /* Enhanced shadow system */
+            --shadow-xs: 0 1px 3px rgba(44, 61, 87, 0.04);
+            --shadow-sm: 0 2px 8px rgba(44, 61, 87, 0.06);
+            --shadow-md: 0 8px 30px rgba(44, 61, 87, 0.08);
+            --shadow-lg: 0 20px 40px rgba(44, 61, 87, 0.12);
+            --shadow-xl: 0 25px 50px rgba(44, 61, 87, 0.15);
+            
+            /* Animation timing */
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--brand-bg);
+            color: var(--brand-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* ===== ENHANCED NAVBAR WITH LOGIN OPTIONS ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(248, 247, 242, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px 32px;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(133, 162, 163, 0.1);
+            transition: all 0.3s var(--ease-smooth);
+        }
+
+        .navbar.scrolled {
+            background: rgba(248, 247, 242, 0.98);
+            box-shadow: var(--shadow-sm);
+            padding: 12px 32px;
+        }
+        
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            height: 42px;
+            width: auto;
+            transition: transform 0.3s var(--ease-smooth);
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Language Selector */
+        .language-selector {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: rgba(133, 162, 163, 0.1);
+            border: 1px solid rgba(133, 162, 163, 0.2);
+            color: var(--brand-text);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-smooth);
+        }
+
+        .language-toggle:hover {
+            background: rgba(133, 162, 163, 0.15);
+            border-color: var(--brand-accent);
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid rgba(133, 162, 163, 0.2);
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            z-index: 1001;
+            min-width: 120px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s var(--ease-smooth);
+        }
+
+        .language-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .language-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--brand-text);
+            cursor: pointer;
+            transition: background 0.3s var(--ease-smooth);
+            border-radius: 6px;
+            margin: 4px;
+        }
+
+        .language-option:hover {
+            background: rgba(133, 162, 163, 0.1);
+        }
+
+        .language-option.active {
+            background: rgba(133, 162, 163, 0.15);
+            font-weight: 600;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 15px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .nav-link {
+            color: var(--brand-text);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s var(--ease-smooth);
+            position: relative;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        
+        .nav-link:hover {
+            color: var(--brand-accent);
+            background: rgba(133, 162, 163, 0.05);
+        }
+
+        .btn-connexion {
+            background: transparent;
+            border: 1.5px solid var(--brand-accent);
+            color: var(--brand-accent);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s var(--ease-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-connexion::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--brand-accent);
+            transition: left 0.3s var(--ease-smooth);
+            z-index: -1;
+        }
+
+        .btn-connexion:hover::before {
+            left: 0;
+        }
+
+        .btn-connexion:hover {
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary-nav {
+            background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-light) 100%);
+            color: var(--brand-text);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s var(--ease-smooth);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(241, 210, 99, 0.4);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.3s var(--ease-smooth);
+        }
+
+        .mobile-menu-toggle span {
+            width: 24px;
+            height: 3px;
+            background: var(--brand-text);
+            margin: 2px 0;
+            transition: 0.3s var(--ease-smooth);
+            border-radius: 2px;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(248, 247, 242, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(133, 162, 163, 0.1);
+            padding: 20px 32px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .mobile-menu.active {
+            display: block;
+            animation: slideDown 0.3s var(--ease-smooth);
+        }
+
+        .mobile-nav-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ===== ENHANCED HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 140px 32px 80px;
+            position: relative;
+            background: linear-gradient(135deg, var(--brand-bg) 0%, #f0efea 50%, #f8f7f2 100%);
+            overflow: hidden;
+        }
+
+        .hero-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content {
+            position: relative;
+        }
+
+        .hero-badge {
+            background: linear-gradient(135deg, var(--brand-accent), var(--brand-accent-light));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s var(--ease-smooth);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.8s var(--ease-smooth) 0.2s both;
+            background: linear-gradient(135deg, var(--brand-text) 0%, var(--brand-text-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--brand-accent);
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s var(--ease-smooth) 0.4s both;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            animation: fadeInUp 0.8s var(--ease-smooth) 0.6s both;
+            flex-wrap: wrap;
+        }
+
+        .cta-primary {
+            background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-light) 100%);
+            color: var(--brand-text);
+            padding: 18px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s var(--ease-smooth);
+            box-shadow: var(--shadow-md);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(241, 210, 99, 0.4);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: var(--brand-accent);
+            padding: 18px 24px;
+            border: 2px solid var(--brand-accent);
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s var(--ease-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-secondary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--brand-accent);
+            transition: left 0.3s var(--ease-smooth);
+            z-index: -1;
+        }
+
+        .cta-secondary:hover::before {
+            left: 0;
+        }
+
+        .cta-secondary:hover {
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Login hint section */
+        .login-hint {
+            background: linear-gradient(135deg, rgba(133, 162, 163, 0.1), rgba(133, 162, 163, 0.05));
+            border: 1px solid rgba(133, 162, 163, 0.2);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-top: 32px;
+            animation: fadeInUp 0.8s var(--ease-smooth) 0.8s both;
+            text-align: center;
+        }
+
+        .login-hint-text {
+            font-size: 14px;
+            color: var(--brand-text);
+            margin-bottom: 12px;
+        }
+
+        .login-hint-link {
+            color: var(--brand-accent);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.3s var(--ease-smooth);
+            cursor: pointer;
+        }
+
+        .login-hint-link:hover {
+            color: var(--brand-text);
+        }
+
+        /* Enhanced demo section */
+        .hero-demo {
+            position: relative;
+            background: var(--brand-white);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.8s var(--ease-smooth) 0.8s both;
+            border: 1px solid rgba(133, 162, 163, 0.1);
+            transition: transform 0.3s var(--ease-smooth);
+        }
+
+        .hero-demo:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px rgba(44, 61, 87, 0.15);
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .demo-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--brand-text);
+            margin-bottom: 8px;
+        }
+
+        .demo-subtitle {
+            font-size: 14px;
+            color: var(--brand-accent);
+        }
+
+        .demo-before,
+        .demo-after {
+            margin-bottom: 20px;
+        }
+
+        .demo-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-before .demo-label {
+            color: #e74c3c;
+        }
+
+        .demo-after .demo-label {
+            color: var(--brand-accent);
+        }
+
+        .demo-text {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            border-left: 4px solid #e74c3c;
+            transition: all 0.3s var(--ease-smooth);
+        }
+
+        .demo-after .demo-text {
+            border-left-color: var(--brand-accent);
+            background: linear-gradient(135deg, #f0f5f5 0%, #f8fafa 100%);
+        }
+
+        .demo-arrow {
+            text-align: center;
+            font-size: 28px;
+            color: var(--brand-gold);
+            margin: 20px 0;
+            font-weight: bold;
+            animation: bounce 2s infinite;
+        }
+
+        /* ===== ENHANCED FLOATING SHAPES ===== */
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.08;
+            animation: float 8s ease-in-out infinite;
+            filter: blur(1px);
+        }
+
+        .shape:nth-child(1) {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--brand-accent), var(--brand-accent-light));
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            top: 15%;
+            left: 8%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-light));
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            top: 50%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--brand-accent), var(--brand-accent-light));
+            border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%;
+            bottom: 25%;
+            left: 15%;
+            animation-delay: 4s;
+        }
+
+        .shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-light));
+            border-radius: 50%;
+            top: 30%;
+            right: 25%;
+            animation-delay: 6s;
+        }
+
+        /* ===== SECTIONS COMMUNES ===== */
+        .section {
+            padding: 100px 32px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--brand-accent);
+            margin-bottom: 80px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 500;
+        }
+
+        /* ===== NEW APPROACHES SECTION ===== */
+        .approaches-section {
+            background: linear-gradient(135deg, var(--brand-white) 0%, #fafafa 100%);
+        }
+
+        .approaches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-top: 80px;
+        }
+
+        .approach-card {
+            background: var(--brand-white);
+            padding: 40px 32px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s var(--ease-smooth);
+            border: 1px solid rgba(133, 162, 163, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .approach-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--brand-gold), var(--brand-accent));
+            transform: scaleX(0);
+            transition: transform 0.3s var(--ease-smooth);
+        }
+
+        .approach-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .approach-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .approach-badge {
+            background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-light));
+            color: var(--brand-text);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .approach-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            color: var(--brand-text);
+        }
+
+        .approach-description {
+            color: var(--brand-accent);
+            line-height: 1.7;
+            font-size: 1rem;
+            margin-bottom: 24px;
+        }
+
+        .approach-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .approach-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--brand-text);
+        }
+
+        .approach-features li::before {
+            content: '✓';
+            color: var(--brand-accent);
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .approach-example {
+            background: linear-gradient(135deg, #f0f5f5 0%, #f8fafa 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 4px solid var(--brand-accent);
+        }
+
+        .approach-example-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--brand-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .approach-example-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--brand-text);
+        }
+
+        /* ===== ENHANCED PROCESS SECTION ===== */
+        .process-section {
+            background: var(--brand-bg);
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 32px;
+            margin-top: 80px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .process-step {
+            text-align: center;
+            position: relative;
+            padding: 35px 30px 40px;
+            background: var(--brand-white);
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s var(--ease-smooth);
+            border: 1px solid rgba(133, 162, 163, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 320px;
+            aspect-ratio: 1;
+        }
+
+        .process-step:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .step-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            transition: all 0.3s var(--ease-smooth);
+            flex-shrink: 0;
+            overflow: hidden;
+            background: var(--brand-white);
+            padding: 5px;
+        }
+
+        /* Couleurs alternées pour les bordures */
+        .process-step:nth-child(1) .step-icon {
+            border: 3px solid var(--brand-accent);
+        }
+
+        .process-step:nth-child(2) .step-icon {
+            border: 3px solid var(--brand-gold);
+        }
+
+        .process-step:nth-child(3) .step-icon {
+            border: 3px solid var(--brand-gold);
+        }
+
+        .process-step:nth-child(4) .step-icon {
+            border: 3px solid var(--brand-accent);
+        }
+
+        .step-icon-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            transition: all 0.3s var(--ease-smooth);
+        }
+
+        .step-number {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-right: 8px;
+            transition: all 0.3s var(--ease-smooth);
+        }
+
+        /* Couleurs alternées pour les numéros */
+        .process-step:nth-child(1) .step-number {
+            color: var(--brand-accent);
+        }
+
+        .process-step:nth-child(2) .step-number {
+            color: var(--brand-gold);
+        }
+
+        .process-step:nth-child(3) .step-number {
+            color: var(--brand-gold);
+        }
+
+        .process-step:nth-child(4) .step-number {
+            color: var(--brand-accent);
+        }
+
+        .process-step:hover .step-icon {
+            transform: scale(1.08) rotate(3deg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .process-step:hover .step-icon-image {
+            transform: scale(1.05);
+        }
+
+        /* Enhanced hover effects for borders */
+        .process-step:nth-child(1):hover .step-icon {
+            border-color: var(--brand-accent-light);
+            box-shadow: 0 8px 25px rgba(133, 162, 163, 0.3);
+        }
+
+        .process-step:nth-child(2):hover .step-icon {
+            border-color: var(--brand-gold-light);
+            box-shadow: 0 8px 25px rgba(241, 210, 99, 0.3);
+        }
+
+        .process-step:nth-child(3):hover .step-icon {
+            border-color: var(--brand-gold-light);
+            box-shadow: 0 8px 25px rgba(241, 210, 99, 0.3);
+        }
+
+        .process-step:nth-child(4):hover .step-icon {
+            border-color: var(--brand-accent-light);
+            box-shadow: 0 8px 25px rgba(133, 162, 163, 0.3);
+        }
+
+        /* Effets hover pour les numéros */
+        .process-step:hover .step-number {
+            transform: scale(1.1);
+            text-shadow: 0 0 8px currentColor;
+        }
+
+        .step-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            margin-top: 8px;
+        }
+
+        .step-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 18px;
+            color: var(--brand-text);
+            line-height: 1.3;
+        }
+
+        .step-description {
+            color: var(--brand-accent);
+            line-height: 1.7;
+            font-size: 1rem;
+            text-align: center;
+            margin: 0 auto;
+            max-width: 90%;
+        }
+
+        /* ===== ENHANCED FEATURES SECTION ===== */
+        .features-section {
+            background: linear-gradient(135deg, var(--brand-white) 0%, #fafafa 100%);
+        }
+
+        .features-intro {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(133, 162, 163, 0.1), rgba(133, 162, 163, 0.05));
+            border: 1px solid rgba(133, 162, 163, 0.2);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 60px;
+        }
+
+        .features-intro-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--brand-text);
+            margin-bottom: 16px;
+        }
+
+        .features-intro-text {
+            color: var(--brand-accent);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 32px;
+            margin-top: 80px;
+        }
+
+        .feature-card {
+            background: var(--brand-white);
+            padding: 40px 32px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s var(--ease-smooth);
+            border: 1px solid rgba(133, 162, 163, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--brand-gold), var(--brand-accent));
+            transform: scaleX(0);
+            transition: transform 0.3s var(--ease-smooth);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-light));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            color: var(--brand-text);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s var(--ease-smooth);
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .feature-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            color: var(--brand-text);
+        }
+
+        .feature-description {
+            color: var(--brand-accent);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .feature-highlight {
+            background: linear-gradient(135deg, var(--brand-gold), var(--brand-gold-light));
+            color: var(--brand-text);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        /* ===== ENHANCED CTA FORMATION ===== */
+        .cta-formation {
+            background: linear-gradient(135deg, var(--brand-text) 0%, #3a4b6d 100%);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-formation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.05"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.05"/><circle cx="50" cy="10" r="1" fill="white" opacity="0.05"/><circle cx="10" cy="60" r="1" fill="white" opacity="0.05"/><circle cx="90" cy="40" r="1" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .cta-formation .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-formation .section-title {
+            color: var(--brand-gold);
+        }
+
+        .cta-formation .section-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .cta-formation-secondary {
+            background: var(--brand-gold);
+            color: var(--brand-text);
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 1.125rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s var(--ease-smooth);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-formation-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(241, 210, 99, 0.4);
+        }
+
+        /* ===== ENHANCED FOOTER ===== */
+        .footer {
+            background: var(--brand-text);
+            color: white;
+            text-align: center;
+            padding: 60px 32px 40px;
+        }
+
+        .footer-logo {
+            height: 45px;
+            margin: 0 auto 20px;
+            filter: brightness(0) saturate(100%) invert(89%) sepia(23%) saturate(692%) hue-rotate(36deg) brightness(105%) contrast(86%);
+            transition: transform 0.3s var(--ease-smooth);
+        }
+
+        .footer-contact {
+            color: var(--brand-accent-light);
+            font-size: 1rem;
+        }
+
+        .footer-contact a {
+            color: var(--brand-gold);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s var(--ease-smooth);
+        }
+
+        .footer-contact a:hover {
+            color: var(--brand-gold-light);
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            33% {
+                transform: translateY(-30px) rotate(120deg);
+            }
+            66% {
+                transform: translateY(-15px) rotate(240deg);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ===== SCROLL ANIMATIONS ===== */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 1s var(--ease-smooth);
+        }
+
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .cta-primary:focus,
+        .cta-secondary:focus,
+        .btn-connexion:focus,
+        .btn-primary-nav:focus,
+        .nav-link:focus {
+            outline: 3px solid var(--brand-gold);
+            outline-offset: 2px;
+        }
+
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 1024px) {
+            .hero-container {
+                gap: 60px;
+            }
+            
+            .features-grid,
+            .approaches-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .process-steps {
+                max-width: 700px;
+                gap: 24px;
+            }
+
+            .process-step {
+                min-height: 260px;
+                padding: 32px 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+
+            .nav-actions {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+            }
+
+            .hero {
+                padding: 120px 20px 60px;
+            }
+
+            .hero-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .hero-cta-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .section {
+                padding: 80px 20px;
+            }
+
+            .process-steps {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                gap: 24px;
+                max-width: 100%;
+            }
+
+            .process-step {
+                aspect-ratio: auto;
+                min-height: auto;
+                padding: 32px 24px;
+            }
+
+            .approaches-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .approach-card {
+                padding: 32px 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2.2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 1.9rem;
+            }
+
+            .demo-text {
+                font-size: 13px;
+            }
+
+            .cta-primary,
+            .cta-secondary {
+                padding: 16px 24px;
+                font-size: 15px;
+            }
+
+            .process-step {
+                padding: 28px 20px;
+            }
+
+            .step-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+
+            .step-title {
+                font-size: 1.1rem;
+            }
+
+            .step-description {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Navbar with Login Options -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-content">
+            <img src="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/134736d6-5e59-461d-8594-dbd8c8d6c400/public" 
+                 alt="TeachInspire" 
+                 class="logo">
+            
+            <div class="nav-actions">
+                <a href="https://www.teachinspire.me" class="nav-link" data-translate="nav.formation">Formation IA</a>
+                
+                <!-- Language Selector -->
+                <div class="language-selector">
+                    <div class="language-toggle" onclick="toggleLanguageDropdown()">
+                        <span class="flag-icon" id="currentFlag">🇫🇷</span>
+                        <span id="currentLang">FR</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6,9 12,15 18,9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="language-dropdown" id="languageDropdown">
+                        <div class="language-option active" onclick="setLanguage('fr')" data-lang="fr">
+                            <span class="flag-icon">🇫🇷</span>
+                            <span>Français</span>
+                        </div>
+                        <div class="language-option" onclick="setLanguage('en')" data-lang="en">
+                            <span class="flag-icon">🇺🇸</span>
+                            <span>English</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="app.html" class="btn-connexion" data-translate="nav.login">Connexion</a>
+                <a href="app.html" class="btn-primary-nav" data-translate="nav.tryFree">Tester gratuitement</a>
+            </div>
+
+            <!-- Mobile menu toggle -->
+            <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-nav-actions">
+                <a href="https://www.teachinspire.me" class="nav-link" data-translate="nav.formation">Formation IA</a>
+                <a href="app.html" class="btn-connexion" data-translate="nav.login">Connexion</a>
+                <a href="app.html" class="btn-primary-nav" data-translate="nav.tryFree">Tester gratuitement</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Enhanced Hero Section -->
+    <section class="hero">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                    </svg>
+                    Promptomatik
+                </div>
+                <h1 class="hero-title" data-translate="hero.title">Créez des prompts IA structurés en quelques clics</h1>
+                <p class="hero-subtitle" data-translate="hero.subtitle">
+                    Transformez vos idées en instructions précises compatibles avec n'importe quel outil d'intelligence artificielle
+                </p>
+                <div class="hero-cta-group">
+                    <a href="app.html" class="cta-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                        <span data-translate="hero.generateBtn">Générer mon prompt</span>
+                    </a>
+                    <a href="#approaches" class="cta-secondary" data-translate="hero.discoverBtn">Découvrir les méthodes</a>
+                </div>
+                
+                <!-- Login hint -->
+                <div class="login-hint">
+                    <div class="login-hint-text">
+                        <span data-translate="hero.loginHint">Vous avez déjà un compte ?</span> 
+                        <a href="app.html" class="login-hint-link" data-translate="hero.loginLink">Connectez-vous ici</a> 
+                        <span data-translate="hero.orText">ou testez gratuitement en créant un compte</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-demo">
+                <div class="demo-header">
+                    <div class="demo-title" data-translate="demo.title">Transformation automatique</div>
+                    <div class="demo-subtitle" data-translate="demo.subtitle">De l'idée au prompt professionnel</div>
+                </div>
+                
+                <div class="demo-before">
+                    <div class="demo-label">
+                        <span>❌</span>
+                        <span data-translate="demo.before">Demande imprécise</span>
+                    </div>
+                    <div class="demo-text" data-translate="demo.beforeExample">"Crée-moi un exercice"</div>
+                </div>
+                
+                <div class="demo-arrow">↓</div>
+                
+                <div class="demo-after">
+                    <div class="demo-label">
+                        <span>✅</span>
+                        <span data-translate="demo.after">Prompt structuré</span>
+                    </div>
+                    <div class="demo-text" data-translate="demo.afterExample">
+                        <strong>Contexte:</strong> Tu es un expert en création d'exercices pédagogiques...<br>
+                        <strong>Objectif:</strong> Concevoir un QCM de 10 questions niveau B2...<br>
+                        <strong>Format:</strong> Questions + 4 options + justifications...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Approaches Section -->
+    <section class="section approaches-section" id="approaches">
+        <div class="container">
+            <h2 class="section-title scroll-reveal" data-translate="approaches.title">Deux approches adaptées à vos besoins</h2>
+            <p class="section-subtitle scroll-reveal" data-translate="approaches.subtitle">
+                Notre outil analyse automatiquement votre demande et recommande l'approche la plus efficace
+            </p>
+            
+            <div class="approaches-grid">
+                <div class="approach-card scroll-reveal">
+                    <div class="approach-badge" data-translate="approaches.mvp.badge">Pour tâches ciblées</div>
+                    <h3 class="approach-title" data-translate="approaches.mvp.title">Approche MVP (Minimum Viable Prompt)</h3>
+                    <p class="approach-description" data-translate="approaches.mvp.description">
+                        Parfaite pour des tâches simples et directes. Cette méthode crée des prompts concis 
+                        mais structurés qui vous donnent des résultats immédiats et exploitables.
+                    </p>
+                    
+                    <ul class="approach-features">
+                        <li data-translate="approaches.mvp.features.0">Instructions claires et directes</li>
+                        <li data-translate="approaches.mvp.features.1">Format de réponse défini</li>
+                        <li data-translate="approaches.mvp.features.2">Contexte essentiel fourni</li>
+                        <li data-translate="approaches.mvp.features.3">Ideal pour tâches répétitives</li>
+                        <li data-translate="approaches.mvp.features.4">Résultats en moins de 30 secondes</li>
+                    </ul>
+                    
+                    <div class="approach-example">
+                        <div class="approach-example-title" data-translate="approaches.mvp.exampleTitle">Exemple d'usage</div>
+                        <div class="approach-example-text" data-translate="approaches.mvp.exampleText">
+                            Création de résumés, traductions, corrections, générations de listes, 
+                            reformulations de texte, création de questionnaires simples...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="approach-card scroll-reveal">
+                    <div class="approach-badge" data-translate="approaches.agentic.badge">Pour projets avancés</div>
+                    <h3 class="approach-title" data-translate="approaches.agentic.title">Approche Agentique</h3>
+                    <p class="approach-description" data-translate="approaches.agentic.description">
+                         Une méthode intelligente qui ajoute des capacités d'auto-évaluation et d'amélioration continue. L'IA ne se contente pas de produire un résultat : elle l'analyse, propose des améliorations et peut itérer de manière autonome.
+                    </p>
+                    
+                    <ul class="approach-features">
+                        <li data-translate="approaches.agentic.features.0">Rôle d'expert défini précisément</li>
+                        <li data-translate="approaches.agentic.features.1">Méthodologie step-by-step</li>
+                        <li data-translate="approaches.agentic.features.2">Analyse approfondie du contexte</li>
+                        <li data-translate="approaches.agentic.features.3">Livrables multiples et structurés</li>
+                        <li data-translate="approaches.agentic.features.4">Qualité professionnelle garantie</li>
+                    </ul>
+                    
+                    <div class="approach-example">
+                        <div class="approach-example-title" data-translate="approaches.agentic.exampleTitle">Exemple d'usage</div>
+                        <div class="approach-example-text" data-translate="approaches.agentic.exampleText">
+                            Création de cours complets, développement de stratégies pédagogiques, 
+                            analyses détaillées, rapports professionnels, guides méthodologiques...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="section process-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal" data-translate="process.title">Comment ça fonctionne ?</h2>
+            <p class="section-subtitle scroll-reveal" data-translate="process.subtitle">4 étapes simples pour transformer votre idée en prompt professionnel</p>
+            
+            <div class="process-steps">
+                <div class="process-step scroll-reveal">
+                    <div class="step-icon">
+                        <img src="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/83df86f3-3278-4160-87cc-ddebab94ac00/public" alt="Étape 1" class="step-icon-image" />
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title"><span class="step-number">1.</span> <span data-translate="process.steps.0.title">Décrivez votre objectif</span></h3>
+                        <p class="step-description" data-translate="process.steps.0.description">
+                            Exprimez simplement ce que vous voulez créer. 
+                            Notre IA comprend le langage naturel, pas besoin d'être technique !
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="process-step scroll-reveal">
+                    <div class="step-icon">
+                        <img src="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/45b7d16c-8315-4b74-eb09-d171e5471700/public" alt="Étape 2" class="step-icon-image" />
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title"><span class="step-number">2.</span> <span data-translate="process.steps.1.title">Analyse intelligente</span></h3>
+                        <p class="step-description" data-translate="process.steps.1.description">
+                            L'outil analyse votre demande et recommande automatiquement 
+                            l'approche optimale (MVP ou Agentique)
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="process-step scroll-reveal">
+                    <div class="step-icon">
+                        <img src="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/c4522fa4-3291-4d0d-4ecf-1d36adffcd00/public" alt="Étape 3" class="step-icon-image" />
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title"><span class="step-number">3.</span> <span data-translate="process.steps.2.title">Personnalisation</span></h3>
+                        <p class="step-description" data-translate="process.steps.2.description">
+                            Affinez les paramètres : niveau de détail, format de sortie, 
+                            contraintes spécifiques selon vos besoins
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="process-step scroll-reveal">
+                    <div class="step-icon">
+                        <img src="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/7024b639-ef35-4648-1bca-3a125c811900/public" alt="Étape 4" class="step-icon-image" />
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title"><span class="step-number">4.</span> <span data-translate="process.steps.3.title">Prompt prêt à l'emploi</span></h3>
+                        <p class="step-description" data-translate="process.steps.3.description">
+                            Récupérez votre prompt optimisé, testez-le et utilisez-le 
+                            avec ChatGPT, Claude, Gemini ou tout autre outil IA
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Features Section -->
+    <section class="section features-section">
+        <div class="container">
+            <h2 class="section-title scroll-reveal" data-translate="features.title">Pourquoi choisir notre générateur ?</h2>
+            
+            <div class="features-intro scroll-reveal">
+                <h3 class="features-intro-title" data-translate="features.introTitle">
+                    Accessible à tous, spécialement optimisé pour l'enseignement
+                </h3>
+                <p class="features-intro-text" data-translate="features.introText">
+                    Bien que notre outil soit conçu pour tous les utilisateurs d'IA, nous avons développé des fonctionnalités 
+                    spécifiques pour les enseignants et formateurs, s'intégrant parfaitement dans l'écosystème de formation TeachInspire.
+                </p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v1.2a1 1 0 0 0 1 1h2.3a1 1 0 0 0 1-1V4.5A2.5 2.5 0 0 1 18.5 2h0A2.5 2.5 0 0 1 21 4.5v15A2.5 2.5 0 0 1 18.5 22h-13A2.5 2.5 0 0 1 3 19.5v-15A2.5 2.5 0 0 1 5.5 2h0A2.5 2.5 0 0 1 8 4.5v1.2a1 1 0 0 0 1 1h.5"/>
+                            <path d="M12 10v4"/>
+                            <path d="M15 12h-6"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title" data-translate="features.items.0.title">Bonus Enseignants</h3>
+                    <p class="feature-description" data-translate="features.items.0.description">
+                        Templates pédagogiques prêts : création d'exercices, 
+                        évaluations, cours structurés. Niveaux CECRL intégrés pour les langues. 
+                        Méthodologies pédagogiques reconnues.
+                    </p>
+                </div>
+                
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title" data-translate="features.items.1.title">Bibliothèque Personnelle</h3>
+                    <p class="feature-description" data-translate="features.items.1.description">
+                        Sauvegardez et organisez vos prompts efficaces. 
+                        Partagez avec votre équipe pédagogique. 
+                        Construisez votre collection sur mesure.
+                    </p>
+                </div>
+                
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title" data-translate="features.items.2.title">IA qui Comprend l'IA</h3>
+                    <p class="feature-description" data-translate="features.items.2.description">
+                        Méthode "méta" : notre IA vous aide à créer des prompts pour l'IA. 
+                        Basé sur la recherche TeachInspire 
+                        en prompt engineering pédagogique.
+                    </p>
+                </div>
+                
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.29,7 12,12 20.71,7"/>
+                            <line x1="12" y1="22" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title" data-translate="features.items.3.title">Universellement Compatible</h3>
+                    <p class="feature-description" data-translate="features.items.3.description">
+                        Fonctionne avec ChatGPT, Claude, Gemini, Copilot et tous les outils IA. 
+                        Support français/anglais automatique 
+                        selon vos préférences.
+                    </p>
+                </div>
+                
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20V10"/>
+                            <path d="M18 20V4"/>
+                            <path d="M6 20v-4"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title" data-translate="features.items.4.title">Gain de Temps Mesurable</h3>
+                    <p class="feature-description" data-translate="features.items.4.description">
+                        Passez de 3 heures de préparation de cours à 30 minutes. 
+                        Économisez 80% de votre temps 
+                        tout en améliorant la qualité.
+                    </p>
+                </div>
+                
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title" data-translate="features.items.5.title">Communauté Active</h3>
+                    <p class="feature-description" data-translate="features.items.5.description">
+                        Rejoignez la communauté TeachInspire : 
+                        échangez vos prompts, 
+                        découvrez les meilleures pratiques, participez aux ateliers exclusifs.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced CTA Formation Section -->
+    <section class="section cta-formation">
+        <div class="container">
+            <h2 class="section-title scroll-reveal" data-translate="cta.title">Prêt à maîtriser l'IA dans votre pratique ?</h2>
+            <p class="section-subtitle scroll-reveal" data-translate="cta.subtitle">
+                Ce Prompt Builder fait partie de l'écosystème complet TeachInspire. 
+                Découvrez notre formation pour transformer votre approche pédagogique avec l'intelligence artificielle.
+            </p>
+            <a href="https://www.teachinspire.me" class="cta-formation-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20V10"/>
+                    <path d="M18 20V4"/>
+                    <path d="M6 20v-4"/>
+                </svg>
+                <span data-translate="cta.button">Découvrir la Formation TeachInspire</span>
+            </a>
+        </div>
+    </section>
+
+
+    <!-- Enhanced Footer -->
+    <footer class="footer">
+        <img src="https://imagedelivery.net/BGb25Nzj8sQ1HtrebC39dQ/134736d6-5e59-461d-8594-dbd8c8d6c400/public" 
+             alt="TeachInspire" 
+             class="footer-logo">
+        <div class="footer-contact">
+            Contact : <a href="mailto:greg@teachinspire.me">greg@teachinspire.me</a>
+        </div>
+    </footer>
+
+    <script>
+        // Landing page translations
+        const landingTranslations = {
+            fr: {
+                nav: {
+                    formation: "Formation IA",
+                    login: "Connexion",
+                    tryFree: "Tester gratuitement"
+                },
+                hero: {
+                    title: "Créez des prompts IA structurés en quelques clics",
+                    subtitle: "Transformez vos idées en instructions précises compatibles avec n'importe quel outil d'intelligence artificielle",
+                    generateBtn: "Générer mon prompt",
+                    discoverBtn: "Découvrir les méthodes",
+                    loginHint: "Vous avez déjà un compte ?",
+                    loginLink: "Connectez-vous ici",
+                    orText: "ou testez gratuitement en créant un compte"
+                },
+                demo: {
+                    title: "Transformation automatique",
+                    subtitle: "De l'idée au prompt professionnel",
+                    before: "Demande imprécise",
+                    after: "Prompt structuré",
+                    beforeExample: "\"Crée-moi un exercice\"",
+                    afterExample: "Contexte: Tu es un expert en création d'exercices pédagogiques...<br>Objectif: Concevoir un QCM de 10 questions niveau B2...<br>Format: Questions + 4 options + justifications..."
+                },
+                approaches: {
+                    title: "Deux approches adaptées à vos besoins",
+                    subtitle: "Notre outil analyse automatiquement votre demande et recommande l'approche la plus efficace",
+                    mvp: {
+                        badge: "Pour tâches ciblées",
+                        title: "Approche MVP (Minimum Viable Prompt)",
+                        description: "Parfaite pour des tâches simples et directes. Cette méthode crée des prompts concis mais structurés qui vous donnent des résultats immédiats et exploitables.",
+                        features: {
+                            0: "Instructions claires et directes",
+                            1: "Format de réponse défini",
+                            2: "Contexte essentiel fourni",
+                            3: "Ideal pour tâches répétitives",
+                            4: "Résultats en moins de 30 secondes"
+                        },
+                        exampleTitle: "Exemple d'usage",
+                        exampleText: "Création de résumés, traductions, corrections, générations de listes, reformulations de texte, création de questionnaires simples..."
+                    },
+                    agentic: {
+                        badge: "Pour projets avancés",
+                        title: "Approche Agentique",
+                        description: "Une méthode intelligente qui ajoute des capacités d'auto-évaluation et d'amélioration continue. L'IA ne se contente pas de produire un résultat : elle l'analyse, propose des améliorations et peut itérer de manière autonome.",
+                        features: {
+                            0: "Rôle d'expert défini précisément",
+                            1: "Méthodologie step-by-step",
+                            2: "Analyse approfondie du contexte",
+                            3: "Livrables multiples et structurés",
+                            4: "Qualité professionnelle garantie"
+                        },
+                        exampleTitle: "Exemple d'usage",
+                        exampleText: "Création de cours complets, développement de stratégies pédagogiques, analyses détaillées, rapports professionnels, guides méthodologiques..."
+                    }
+                },
+                process: {
+                    title: "Comment ça fonctionne ?",
+                    subtitle: "4 étapes simples pour transformer votre idée en prompt professionnel",
+                    steps: {
+                        0: {
+                            title: "Décrivez votre objectif",
+                            description: "Exprimez simplement ce que vous voulez créer. Notre IA comprend le langage naturel, pas besoin d'être technique !"
+                        },
+                        1: {
+                            title: "Analyse intelligente",
+                            description: "L'outil analyse votre demande et recommande automatiquement l'approche optimale (MVP ou Agentique)"
+                        },
+                        2: {
+                            title: "Personnalisation",
+                            description: "Affinez les paramètres : niveau de détail, format de sortie, contraintes spécifiques selon vos besoins"
+                        },
+                        3: {
+                            title: "Prompt prêt à l'emploi",
+                            description: "Récupérez votre prompt optimisé, testez-le et utilisez-le avec ChatGPT, Claude, Gemini ou tout autre outil IA"
+                        }
+                    }
+                },
+                features: {
+                    title: "Pourquoi choisir notre générateur ?",
+                    introTitle: "Accessible à tous, spécialement optimisé pour l'enseignement",
+                    introText: "Bien que notre outil soit conçu pour tous les utilisateurs d'IA, nous avons développé des fonctionnalités spécifiques pour les enseignants et formateurs, s'intégrant parfaitement dans l'écosystème de formation TeachInspire.",
+                    items: {
+                        0: {
+                            title: "Bonus Enseignants",
+                            description: "Templates pédagogiques prêts : création d'exercices, évaluations, cours structurés. Niveaux CECRL intégrés pour les langues. Méthodologies pédagogiques reconnues."
+                        },
+                        1: {
+                            title: "Bibliothèque Personnelle",
+                            description: "Sauvegardez et organisez vos prompts efficaces. Partagez avec votre équipe pédagogique. Construisez votre collection sur mesure."
+                        },
+                        2: {
+                            title: "IA qui Comprend l'IA",
+                            description: "Méthode \"méta\" : notre IA vous aide à créer des prompts pour l'IA. Basé sur la recherche TeachInspire en prompt engineering pédagogique."
+                        },
+                        3: {
+                            title: "Universellement Compatible",
+                            description: "Fonctionne avec ChatGPT, Claude, Gemini, Copilot et tous les outils IA. Support français/anglais automatique selon vos préférences."
+                        },
+                        4: {
+                            title: "Gain de Temps Mesurable",
+                            description: "Passez de 3 heures de préparation de cours à 30 minutes. Économisez 80% de votre temps tout en améliorant la qualité."
+                        },
+                        5: {
+                            title: "Communauté Active",
+                            description: "Rejoignez la communauté TeachInspire : échangez vos prompts, découvrez les meilleures pratiques, participez aux ateliers exclusifs."
+                        }
+                    }
+                },
+                cta: {
+                    title: "Prêt à maîtriser l'IA dans votre pratique ?",
+                    subtitle: "Ce Prompt Builder fait partie de l'écosystème complet TeachInspire. Découvrez notre formation pour transformer votre approche pédagogique avec l'intelligence artificielle.",
+                    button: "Découvrir la Formation TeachInspire"
+                }
+            },
+            en: {
+                nav: {
+                    formation: "AI Training",
+                    login: "Sign In",
+                    tryFree: "Try for Free"
+                },
+                hero: {
+                    title: "Create structured AI prompts in just a few clicks",
+                    subtitle: "Transform your ideas into precise instructions compatible with any artificial intelligence tool",
+                    generateBtn: "Generate my prompt",
+                    discoverBtn: "Discover the methods",
+                    loginHint: "Already have an account?",
+                    loginLink: "Sign in here",
+                    orText: "or test for free by creating an account"
+                },
+                demo: {
+                    title: "Automatic transformation",
+                    subtitle: "From idea to professional prompt",
+                    before: "Vague request",
+                    after: "Structured prompt",
+                    beforeExample: "\"Create an exercise for me\"",
+                    afterExample: "Context: You are an expert in creating pedagogical exercises...<br>Objective: Design a 10-question multiple choice quiz for B2 level...<br>Format: Questions + 4 options + justifications..."
+                },
+                approaches: {
+                    title: "Two approaches tailored to your needs",
+                    subtitle: "Our tool automatically analyzes your request and recommends the most effective approach",
+                    mvp: {
+                        badge: "For focused tasks",
+                        title: "MVP Approach (Minimum Viable Prompt)",
+                        description: "Perfect for simple and direct tasks. This method creates concise but structured prompts that give you immediate and actionable results.",
+                        features: {
+                            0: "Clear and direct instructions",
+                            1: "Defined response format",
+                            2: "Essential context provided",
+                            3: "Ideal for repetitive tasks",
+                            4: "Results in less than 30 seconds"
+                        },
+                        exampleTitle: "Usage example",
+                        exampleText: "Creating summaries, translations, corrections, list generation, text reformulation, simple quiz creation..."
+                    },
+                    agentic: {
+                        badge: "For advanced projects",
+                        title: "Agentic Approach",
+                        description: "An intelligent method that adds self-assessment and continuous improvement capabilities. The AI doesn't just produce a result: it analyzes it, suggests improvements, and can iterate autonomously.",
+                        features: {
+                            0: "Precisely defined expert role",
+                            1: "Step-by-step methodology",
+                            2: "In-depth context analysis",
+                            3: "Multiple structured deliverables",
+                            4: "Professional quality guaranteed"
+                        },
+                        exampleTitle: "Usage example",
+                        exampleText: "Creating complete courses, developing pedagogical strategies, detailed analyses, professional reports, methodological guides..."
+                    }
+                },
+                process: {
+                    title: "How does it work?",
+                    subtitle: "4 simple steps to transform your idea into a professional prompt",
+                    steps: {
+                        0: {
+                            title: "Describe your goal",
+                            description: "Simply express what you want to create. Our AI understands natural language, no need to be technical!"
+                        },
+                        1: {
+                            title: "Intelligent analysis",
+                            description: "The tool analyzes your request and automatically recommends the optimal approach (MVP or Agentic)"
+                        },
+                        2: {
+                            title: "Customization",
+                            description: "Fine-tune the parameters: level of detail, output format, specific constraints according to your needs"
+                        },
+                        3: {
+                            title: "Ready-to-use prompt",
+                            description: "Get your optimized prompt, test it and use it with ChatGPT, Claude, Gemini or any other AI tool"
+                        }
+                    }
+                },
+                features: {
+                    title: "Why choose our generator?",
+                    introTitle: "Accessible to all, specially optimized for education",
+                    introText: "While our tool is designed for all AI users, we have developed specific features for teachers and trainers, perfectly integrating into the TeachInspire training ecosystem.",
+                    items: {
+                        0: {
+                            title: "Teacher Bonus",
+                            description: "Ready pedagogical templates: exercise creation, assessments, structured courses. Integrated CEFR levels for languages. Recognized pedagogical methodologies."
+                        },
+                        1: {
+                            title: "Personal Library",
+                            description: "Save and organize your effective prompts. Share with your pedagogical team. Build your custom collection."
+                        },
+                        2: {
+                            title: "AI that Understands AI",
+                            description: "\"Meta\" method: our AI helps you create prompts for AI. Based on TeachInspire research in pedagogical prompt engineering."
+                        },
+                        3: {
+                            title: "Universally Compatible",
+                            description: "Works with ChatGPT, Claude, Gemini, Copilot and all AI tools. Automatic French/English support according to your preferences."
+                        },
+                        4: {
+                            title: "Measurable Time Savings",
+                            description: "Go from 3 hours of course preparation to 30 minutes. Save 80% of your time while improving quality."
+                        },
+                        5: {
+                            title: "Active Community",
+                            description: "Join the TeachInspire community: exchange your prompts, discover best practices, participate in exclusive workshops."
+                        }
+                    }
+                },
+                cta: {
+                    title: "Ready to master AI in your practice?",
+                    subtitle: "This Prompt Builder is part of the complete TeachInspire ecosystem. Discover our training to transform your pedagogical approach with artificial intelligence.",
+                    button: "Discover TeachInspire Training"
+                }
+            }
+        };
+
+        // Current language state
+        let currentLanguage = localStorage.getItem('preferred-language') || 'fr';
+
+        // Language management functions
+        function toggleLanguageDropdown() {
+            const dropdown = document.getElementById('languageDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('preferred-language', lang);
+            
+            // Update UI
+            updateLanguageUI();
+            translatePage();
+            
+            // Close dropdown
+            document.getElementById('languageDropdown').classList.remove('active');
+            
+            // Update all app.html links to include language parameter
+            updateAppLinks(lang);
+        }
+
+        function updateAppLinks(lang) {
+            document.querySelectorAll('a[href="app.html"]').forEach(link => {
+                link.href = `app.html?lang=${lang}`;
+            });
+        }
+
+        function updateLanguageUI() {
+            const currentFlag = document.getElementById('currentFlag');
+            const currentLang = document.getElementById('currentLang');
+            const options = document.querySelectorAll('.language-option');
+            
+            if (currentLanguage === 'fr') {
+                currentFlag.textContent = '🇫🇷';
+                currentLang.textContent = 'FR';
+                document.documentElement.lang = 'fr';
+            } else {
+                currentFlag.textContent = '🇺🇸';
+                currentLang.textContent = 'EN';
+                document.documentElement.lang = 'en';
+            }
+            
+            // Update active option
+            options.forEach(option => {
+                option.classList.toggle('active', option.dataset.lang === currentLanguage);
+            });
+        }
+
+        function translatePage() {
+            const translations = landingTranslations[currentLanguage];
+            
+            // Translate all elements with data-translate attribute
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                const translation = getNestedTranslation(translations, key);
+                if (translation) {
+                    element.textContent = translation;
+                }
+            });
+        }
+
+        function getNestedTranslation(obj, path) {
+            return path.split('.').reduce((o, p) => o && o[p], obj);
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (event) => {
+            const langSelector = document.querySelector('.language-selector');
+            const dropdown = document.getElementById('languageDropdown');
+            if (!langSelector.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Initialize language on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateLanguageUI();
+            translatePage();
+            updateAppLinks(currentLanguage);
+        });
+
+        // Enhanced scroll reveal animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -80px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all scroll-reveal elements
+        document.querySelectorAll('.scroll-reveal').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+            mobileMenuToggle.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileMenuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+                mobileMenuToggle.classList.remove('active');
+            }
+        });
+
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Close mobile menu if open
+                    mobileMenu.classList.remove('active');
+                    mobileMenuToggle.classList.remove('active');
+                }
+            });
+        });
+
+        // Enhanced demo interaction
+        let demoToggle = false;
+        let demoInterval;
+
+        function startDemoAnimation() {
+            demoInterval = setInterval(() => {
+                const demoAfter = document.querySelector('.demo-after');
+                const demoBefore = document.querySelector('.demo-before');
+                
+                if (demoAfter && demoBefore) {
+                    demoToggle = !demoToggle;
+                    
+                    if (demoToggle) {
+                        demoAfter.style.transform = 'scale(1.02)';
+                        demoAfter.style.background = 'linear-gradient(135deg, #e8f4f4 0%, #f0f8f8 100%)';
+                        demoBefore.style.transform = 'scale(0.98)';
+                        demoBefore.style.opacity = '0.7';
+                    } else {
+                        demoAfter.style.transform = 'scale(1)';
+                        demoAfter.style.background = 'linear-gradient(135deg, #f0f5f5 0%, #f8fafa 100%)';
+                        demoBefore.style.transform = 'scale(1)';
+                        demoBefore.style.opacity = '1';
+                    }
+                    
+                    demoAfter.style.transition = 'all 0.5s var(--ease-smooth)';
+                    demoBefore.style.transition = 'all 0.5s var(--ease-smooth)';
+                }
+            }, 3000);
+        }
+
+        // Start demo animation when page loads
+        window.addEventListener('load', startDemoAnimation);
+
+        // Performance optimization: Pause animations when tab is not visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                clearInterval(demoInterval);
+            } else {
+                startDemoAnimation();
+            }
+        });
+    </script>
+    
+</body>
+</html>
