@@ -33,11 +33,11 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
   };
   const [step, setStep] = useState(1);
   const [rawRequest, setRawRequest] = useState('');
-  const [promptType, setPromptType] = useState('MVP');
+  const [promptType, setPromptType] = useState('SIMPLE');
   
   const [analyzedDomain, setAnalyzedDomain] = useState('other');
   const [analyzedComplexity, setAnalyzedComplexity] = useState('simple');
-  const [recommendedType, setRecommendedType] = useState('MVP');
+  const [recommendedType, setRecommendedType] = useState('SIMPLE');
 
   const [selectedDomain, setSelectedDomain] = useState('education');
   const [outputLength, setOutputLength] = useState('medium');
@@ -101,7 +101,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
     return {
       domain: detectedDomain,
       complexity: isComplex ? 'complex' : 'simple',
-      recommendedType: isComplex ? 'AGENTIC' : 'MVP'
+      recommendedType: isComplex ? 'PROFESSIONNEL' : 'SIMPLE'
     };
   }, []);
 
@@ -253,10 +253,10 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
   const resetForm = () => {
     setStep(1);
     setRawRequest('');
-    setPromptType('MVP');
+    setPromptType('SIMPLE');
     setAnalyzedDomain('other');
     setAnalyzedComplexity('simple');
-    setRecommendedType('MVP');
+    setRecommendedType('SIMPLE');
     setSelectedDomain('education');
     setOutputLength('medium');
     setExpertRole('');
@@ -320,7 +320,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
     // Map API response fields to local state
     setRawRequest(promptData.raw_request || promptData.rawRequest || '');
     setGeneratedPrompt(promptData.generated_prompt || promptData.generatedPrompt || '');
-    setPromptType(promptData.prompt_type || promptData.type || 'MVP');
+    setPromptType(promptData.prompt_type || promptData.type || 'SIMPLE');
     setSelectedDomain(promptData.domain || 'education');
     setLanguage(promptData.language || DEFAULT_LANGUAGE);
     setExpertRole(promptData.expert_role || '');
@@ -496,8 +496,8 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
           React.createElement("h2", { className: "text-xl font-semibold text-brand-text mb-5 pb-2 border-b-2 border-brand-primary-accent/50" }, t.approach.title),
           React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
             [
-              { type: 'MVP', title: t.approach.mvp.title, subtitle: t.approach.mvp.subtitle, description: t.approach.mvp.description },
-              { type: 'AGENTIC', title: t.approach.agentique.title, subtitle: t.approach.agentique.subtitle, description: t.approach.agentique.description }
+              { type: 'SIMPLE', title: t.approach.simple.title, subtitle: t.approach.simple.subtitle, description: t.approach.simple.description },
+              { type: 'PROFESSIONNEL', title: t.approach.professionnel.title, subtitle: t.approach.professionnel.subtitle, description: t.approach.professionnel.description }
             ].map(item => React.createElement("button", {
               key: item.type,
               onClick: () => setPromptType(item.type),
@@ -683,7 +683,7 @@ const MainApp = ({ initialLanguage, onLanguageChange }) => {
             savedPrompts.map((prompt) => {
               const title = prompt.title || '';
               const rawRequest = prompt.raw_request || prompt.rawRequest || '';
-              const promptType = prompt.prompt_type || prompt.type || 'MVP';
+              const promptType = prompt.prompt_type || prompt.type || 'SIMPLE';
               const domain = prompt.domain || 'other';
               const timestamp = prompt.created_at || prompt.timestamp || Date.now();
               

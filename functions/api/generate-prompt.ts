@@ -71,10 +71,10 @@ const metaPromptTranslations = {
     constraintsLabel: "Constraints for the AI using the generated prompt (one per line):",
     noneSpecified: "None specified",
     finalPromptLangLabel: "The language for the final prompt itself MUST be: {TARGET_LANGUAGE}.",
-    constructPromptInstruction: "Now, based on whether the type is MVP or AGENTIC, construct the prompt using the following templates and information.",
+    constructPromptInstruction: "Now, based on whether the type is SIMPLE or PROFESSIONNEL, construct the prompt using the following templates and information.",
     
     // Enhanced MVP Section
-    mvpTemplateHeader: "For an \"MVP\" type prompt, generate a complete executable prompt:",
+    mvpTemplateHeader: "For a \"SIMPLE\" type prompt, generate a complete executable prompt:",
     mvpGenerateInstruction: "Generate a complete, executable prompt using this exact structure:",
     mvpSystemRole: "You are an excellent {expertRolePlaceholder}: knowledgeable, precise, pedagogical. Your mission is to {missionPlaceholder}.",
     mvpExpertPlaceholder: "Expert",
@@ -121,8 +121,8 @@ const metaPromptTranslations = {
     mvpFooter: "CRITICAL: First provide the title using format 'TITLE: [your title]', then generate the complete prompt with <System>, <User>, and <Example> sections. Do not add meta-commentary or explanations outside this structure.",
     
     // Enhanced AGENTIC Section
-    agenticTemplateHeader: "For an \"AGENTIC\" type prompt, generate a complete executable prompt with self-assessment capabilities:",
-    agenticGenerateInstruction: "Generate a complete, executable AGENTIC prompt using this exact structure:",
+    agenticTemplateHeader: "For a \"PROFESSIONNEL\" type prompt, generate a complete executable prompt with self-assessment capabilities:",
+    agenticGenerateInstruction: "Generate a complete, executable PROFESSIONNEL prompt using this exact structure:",
     agenticTitleInstruction: "[Generate a concise and descriptive title (max 5-7 words) derived from the user's raw request.]",
     agenticRole: "{expertRolePlaceholder} (Agentic AI)",
     agenticExpertPlaceholder: "Expert Analyst", 
@@ -186,10 +186,10 @@ const metaPromptTranslations = {
     constraintsLabel: "Contraintes pour l'IA utilisant le prompt généré (une par ligne) :",
     noneSpecified: "Aucune spécifiée",
     finalPromptLangLabel: "La langue du prompt final lui-même DOIT être : {TARGET_LANGUAGE}.",
-    constructPromptInstruction: "Maintenant, selon que le type est MVP ou AGENTIQUE, générez le prompt en utilisant les modèles et informations suivants.",
+    constructPromptInstruction: "Maintenant, selon que le type est SIMPLE ou PROFESSIONNEL, générez le prompt en utilisant les modèles et informations suivants.",
     
     // Enhanced MVP Section - French
-    mvpTemplateHeader: "Pour un prompt de type \"MVP\", générez un prompt exécutable complet :",
+    mvpTemplateHeader: "Pour un prompt de type \"SIMPLE\", générez un prompt exécutable complet :",
     mvpGenerateInstruction: "Générez un prompt complet et exécutable en utilisant exactement cette structure :",
     mvpSystemRole: "Vous êtes un excellent {expertRolePlaceholder} : compétent, précis, pédagogue. Votre mission est d'{missionPlaceholder}.",
     mvpExpertPlaceholder: "Expert",
@@ -236,8 +236,8 @@ const metaPromptTranslations = {
     mvpFooter: "CRITIQUE: Fournissez d'abord le titre en utilisant le format 'TITRE: [votre titre]', puis générez le prompt complet avec les sections <System>, <User>, et <Example>. N'ajoutez aucun méta-commentaire ou explication en dehors de cette structure.",
     
     // Enhanced AGENTIC Section - French (same structure, with self-assessment)
-    agenticTemplateHeader: "Pour un prompt de type \"AGENTIQUE\", générez un prompt exécutable complet avec capacités d'auto-évaluation :",
-    agenticGenerateInstruction: "Générez un prompt AGENTIQUE complet et exécutable en utilisant exactement cette structure :",
+    agenticTemplateHeader: "Pour un prompt de type \"PROFESSIONNEL\", générez un prompt exécutable complet avec capacités d'auto-évaluation :",
+    agenticGenerateInstruction: "Générez un prompt PROFESSIONNEL complet et exécutable en utilisant exactement cette structure :",
     agenticTitleInstruction: "[Générez un titre concis et descriptif (max 5-7 mots) dérivé de la demande brute de l'utilisateur.]",
     agenticRole: "{expertRolePlaceholder} (IA Agentique)",
     agenticExpertPlaceholder: "Analyste Expert",
@@ -510,7 +510,7 @@ ${tMeta.finalPromptLangLabel.replace('{TARGET_LANGUAGE}', finalPromptTargetLangu
 ${tMeta.constructPromptInstruction}
 `;
 
-  if (promptType === 'MVP') {
+  if (promptType === 'SIMPLE') {
     userQuery += `
 ${tMeta.mvpTemplateHeader}
 
@@ -547,7 +547,7 @@ ${tMeta.mvpExampleInstruction}
 
 ${tMeta.mvpFooter}
 `;
-  } else { // AGENTIC
+  } else { // PROFESSIONNEL
     const criteriaDomain = (domain === 'education' || domain === 'technical') ? domain : 'other';
     const evaluationCriteriaList = tMeta.agenticEvaluationCriteria[criteriaDomain];
     

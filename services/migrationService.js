@@ -177,7 +177,7 @@ class MigrationService {
     if (actionWord) {
       title = `${actionWord} ${domainWords[domain] || 'Projet'}`;
     } else {
-      title = `${domainWords[domain] || 'Projet'} ${oldPrompt.type || 'MVP'}`;
+      title = `${domainWords[domain] || 'Projet'} ${oldPrompt.type || 'SIMPLE'}`;
     }
     
     // Ensure reasonable length
@@ -200,7 +200,7 @@ class MigrationService {
       const converted = {
         raw_request: oldPrompt.rawRequest || '',
         generated_prompt: oldPrompt.generatedPrompt || '',
-        prompt_type: oldPrompt.type === 'AGENTIQUE' ? 'AGENTIC' : (oldPrompt.type || 'MVP'),
+        prompt_type: oldPrompt.type === 'PROFESSIONNEL' ? 'PROFESSIONNEL' : (oldPrompt.type || 'SIMPLE'),
         domain: oldPrompt.domain || 'other',
         language: oldPrompt.language || 'fr',
         output_length: 'medium', // Default since this wasn't in old format
@@ -237,7 +237,7 @@ class MigrationService {
       errors.push('generated_prompt too long');
     }
 
-    if (!['MVP', 'AGENTIC'].includes(prompt.prompt_type)) {
+    if (!['SIMPLE', 'PROFESSIONNEL'].includes(prompt.prompt_type)) {
       errors.push('Invalid prompt_type');
     }
 

@@ -41,15 +41,15 @@ export const translations = {
     },
     approach: {
       title: "Choisissez votre approche",
-      mvp: {
-        title: "MVP",
-        subtitle: "(Recommandé pour tâches simples)",
-        description: "Structure simple System-User-Exemple"
+      simple: {
+        title: "PROMPT SIMPLE STRUCTURÉ",
+        subtitle: "Pour vos tâches quotidiennes",
+        description: "⚡ Rapide et efficace"
       },
-      agentique: {
-        title: "AGENTIQUE",
-        subtitle: "(Pour tâches complexes)",
-        description: "Avec auto-évaluation et itération"
+      professionnel: {
+        title: "⭐ PROMPT PROFESSIONNEL",
+        subtitle: "Pour vos projets importants",
+        description: "🎯 L'IA vérifie et perfectionne son propre travail"
       }
     },
     variables: {
@@ -266,15 +266,15 @@ export const translations = {
     },
     approach: {
       title: "Choose your approach",
-      mvp: {
-        title: "MVP",
-        subtitle: "(Recommended for simple tasks)",
-        description: "Simple System-User-Example structure"
+      simple: {
+        title: "SIMPLE STRUCTURED PROMPT",
+        subtitle: "For your daily tasks",
+        description: "⚡ Fast and efficient"
       },
-      agentique: {
-        title: "AGENTIC",
-        subtitle: "(For complex tasks)",
-        description: "With self-assessment and iteration"
+      professionnel: {
+        title: "⭐ PROFESSIONAL PROMPT",
+        subtitle: "For your important projects",
+        description: "🎯 AI verifies and perfects its own work"
       }
     },
     variables: {

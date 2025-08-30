@@ -1,5 +1,5 @@
 
-export type PromptType = 'MVP' | 'AGENTIC';
+export type PromptType = 'SIMPLE' | 'PROFESSIONNEL';
 export type Language = 'fr' | 'en';
 export type Domain = 'education' | 'technical' | 'creative' | 'analysis' | 'other';
 export type Complexity = 'auto' | 'simple' | 'complex'; // 'auto' might not be used if we always determine it
@@ -38,12 +38,12 @@ interface TranslationSet {
   };
   approach: {
     title: string;
-    mvp: {
+    simple: {
       title: string;
       subtitle: string;
       description: string;
     };
-    agentique: {
+    professionnel: {
       title: string;
       subtitle: string;
       description: string;
@@ -226,7 +226,7 @@ export interface DatabasePrompt {
   title: string;
   raw_request: string;
   generated_prompt: string;
-  prompt_type: 'MVP' | 'AGENTIC';
+  prompt_type: 'SIMPLE' | 'PROFESSIONNEL';
   domain: 'education' | 'technical' | 'creative' | 'analysis' | 'other';
   language: 'fr' | 'en';
   output_length: 'short' | 'medium' | 'long';
@@ -244,7 +244,7 @@ export interface APIPrompt {
   title: string;
   rawRequest: string;
   generatedPrompt: string;
-  promptType: 'MVP' | 'AGENTIC';
+  promptType: 'SIMPLE' | 'PROFESSIONNEL';
   domain: 'education' | 'technical' | 'creative' | 'analysis' | 'other';
   language: 'fr' | 'en';
   outputLength: 'short' | 'medium' | 'long';
@@ -259,7 +259,7 @@ export interface APIPrompt {
 export interface CreatePromptRequest {
   rawRequest: string;
   generatedPrompt: string;
-  promptType: 'MVP' | 'AGENTIC';
+  promptType: 'SIMPLE' | 'PROFESSIONNEL';
   domain: 'education' | 'technical' | 'creative' | 'analysis' | 'other';
   language: 'fr' | 'en';
   outputLength: 'short' | 'medium' | 'long';
@@ -284,7 +284,7 @@ export interface PromptQueryParams {
   sortBy?: 'created_at' | 'updated_at' | 'title' | 'is_favorite';
   sortOrder?: 'ASC' | 'DESC';
   domain?: 'education' | 'technical' | 'creative' | 'analysis' | 'other';
-  promptType?: 'MVP' | 'AGENTIC';
+  promptType?: 'SIMPLE' | 'PROFESSIONNEL';
   language?: 'fr' | 'en';
   isFavorite?: boolean;
   search?: string;

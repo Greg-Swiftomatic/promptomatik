@@ -22,7 +22,7 @@ export interface Prompt {
   title: string;
   rawRequest: string;
   generatedPrompt: string;
-  promptType: 'MVP' | 'AGENTIC';
+  promptType: 'SIMPLE' | 'PROFESSIONNEL';
   domain: 'education' | 'technical' | 'creative' | 'analysis' | 'other';
   language: 'fr' | 'en';
   outputLength: 'short' | 'medium' | 'long';
@@ -39,7 +39,7 @@ export interface CreatePromptData {
   title?: string; // Will auto-generate if not provided
   rawRequest: string;
   generatedPrompt: string;
-  promptType: 'MVP' | 'AGENTIC';
+  promptType: 'SIMPLE' | 'PROFESSIONNEL';
   domain: 'education' | 'technical' | 'creative' | 'analysis' | 'other';
   language: 'fr' | 'en';
   outputLength: 'short' | 'medium' | 'long';
@@ -183,7 +183,7 @@ export class PromptsDatabase {
       }
       
       // Validate enum fields
-      if (!['MVP', 'AGENTIC'].includes(createData.promptType)) {
+      if (!['SIMPLE', 'PROFESSIONNEL'].includes(createData.promptType)) {
         throw new PromptError('Invalid prompt type', 'INVALID_PROMPT_TYPE', 400);
       }
       
@@ -347,7 +347,7 @@ export class PromptsDatabase {
         title: result.title,
         rawRequest: result.raw_request,
         generatedPrompt: result.generated_prompt,
-        promptType: result.prompt_type as 'MVP' | 'AGENTIC',
+        promptType: result.prompt_type as 'SIMPLE' | 'PROFESSIONNEL',
         domain: result.domain as 'education' | 'technical' | 'creative' | 'analysis' | 'other',
         language: result.language as 'fr' | 'en',
         outputLength: result.output_length as 'short' | 'medium' | 'long',
@@ -446,7 +446,7 @@ export class PromptsDatabase {
         title: row.title,
         rawRequest: row.raw_request,
         generatedPrompt: row.generated_prompt,
-        promptType: row.prompt_type as 'MVP' | 'AGENTIC',
+        promptType: row.prompt_type as 'SIMPLE' | 'PROFESSIONNEL',
         domain: row.domain as 'education' | 'technical' | 'creative' | 'analysis' | 'other',
         language: row.language as 'fr' | 'en',
         outputLength: row.output_length as 'short' | 'medium' | 'long',

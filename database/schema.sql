@@ -24,7 +24,7 @@ CREATE TABLE prompts (
     title TEXT NOT NULL CHECK(length(title) <= 100), -- Max 100 chars as requested
     raw_request TEXT NOT NULL, -- Original user input
     generated_prompt TEXT NOT NULL, -- AI-generated prompt
-    prompt_type TEXT NOT NULL CHECK(prompt_type IN ('MVP', 'AGENTIC')),
+    prompt_type TEXT NOT NULL CHECK(prompt_type IN ('SIMPLE', 'PROFESSIONNEL')),
     domain TEXT NOT NULL CHECK(domain IN ('education', 'technical', 'creative', 'analysis', 'other')),
     language TEXT NOT NULL CHECK(language IN ('fr', 'en')),
     output_length TEXT NOT NULL CHECK(output_length IN ('short', 'medium', 'long')),
